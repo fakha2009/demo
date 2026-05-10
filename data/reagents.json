@@ -1,0 +1,258 @@
+{
+  "reagents": [
+    {
+      "id": "Mg",
+      "name": "Магний",
+      "formula": "Mg",
+      "type": "metal",
+      "state": "solid",
+      "appearance": "серебристо-белый металл",
+      "properties": {
+        "atomic_number": 12,
+        "atomic_mass": 24.305,
+        "melting_point": 650,
+        "boiling_point": 1090,
+        "density": 1.74,
+        "reactivity": "high"
+      },
+      "safety": {
+        "level": "moderate",
+        "hazards": ["пожароопасный", "легковоспламеняющийся"],
+        "precautions": ["хранить в масле", "избегать влаги"]
+      },
+      "educational_info": {
+        "group": "щелочноземельные металлы",
+        "period": 3,
+        "common_uses": ["сплавы", "фейерверки", "фотография"],
+        "discovery": "1808 год, Гемфри Дэви"
+      },
+      "visual": {
+        "color": "linear-gradient(135deg, rgba(180,180,180,0.6), rgba(100,100,100,0.4))",
+        "icon": "🔩",
+        "texture": "metallic"
+      }
+    },
+    {
+      "id": "O2",
+      "name": "Кислород",
+      "formula": "O₂",
+      "type": "gas",
+      "state": "gas",
+      "appearance": "бесцветный газ",
+      "properties": {
+        "atomic_number": 8,
+        "atomic_mass": 15.999,
+        "melting_point": -218,
+        "boiling_point": -183,
+        "density": 1.429,
+        "reactivity": "moderate"
+      },
+      "safety": {
+        "level": "safe",
+        "hazards": ["поддерживает горение"],
+        "precautions": ["контролировать концентрацию"]
+      },
+      "educational_info": {
+        "group": "халькогены",
+        "period": 2,
+        "common_uses": ["дыхание", "горение", "окисление"],
+        "discovery": "1774 год, Джозеф Пристли"
+      },
+      "visual": {
+        "color": "linear-gradient(135deg, rgba(200,255,255,0.5), rgba(150,200,255,0.4))",
+        "icon": "💨",
+        "texture": "transparent"
+      }
+    },
+    {
+      "id": "HCl",
+      "name": "Соляная кислота",
+      "formula": "HCl",
+      "type": "acid",
+      "state": "liquid",
+      "appearance": "бесцветная жидкость",
+      "properties": {
+        "molar_mass": 36.46,
+        "density": 1.18,
+        "boiling_point": 108,
+        "ph": 0.1,
+        "reactivity": "high"
+      },
+      "safety": {
+        "level": "dangerous",
+        "hazards": ["коррозионный", "токсичный", "вызывает ожоги"],
+        "precautions": ["защитная экипировка", "проветривание", "нейтрализация"]
+      },
+      "educational_info": {
+        "group": "галогеноводороды",
+        "common_uses": ["очистка металлов", "производство хлоридов", "pH регулирование"],
+        "discovery": "древность"
+      },
+      "visual": {
+        "color": "linear-gradient(135deg, rgba(255,200,200,0.6), rgba(200,150,150,0.5))",
+        "icon": "⚗️",
+        "texture": "liquid"
+      }
+    },
+    {
+      "id": "NaOH",
+      "name": "Гидроксид натрия",
+      "formula": "NaOH",
+      "type": "base",
+      "state": "solid",
+      "appearance": "белые кристаллы",
+      "properties": {
+        "molar_mass": 39.997,
+        "melting_point": 318,
+        "boiling_point": 1388,
+        "density": 2.13,
+        "ph": 13.0,
+        "reactivity": "high"
+      },
+      "safety": {
+        "level": "dangerous",
+        "hazards": ["коррозионный", "вызывает ожоги", "реагирует с кислотами"],
+        "precautions": ["защитная экипировка", "сухое хранение"]
+      },
+      "educational_info": {
+        "group": "щёлочи",
+        "common_uses": ["мыловарение", "очистка", "бумажная промышленность"],
+        "discovery": "древность"
+      },
+      "visual": {
+        "color": "linear-gradient(135deg, rgba(200,200,255,0.6), rgba(150,150,200,0.5))",
+        "icon": "🧪",
+        "texture": "crystalline"
+      }
+    },
+    {
+      "id": "H2O2",
+      "name": "Пероксид водорода",
+      "formula": "H₂O₂",
+      "type": "oxidizer",
+      "state": "liquid",
+      "appearance": "бесцветная жидкость",
+      "properties": {
+        "molar_mass": 34.014,
+        "density": 1.45,
+        "boiling_point": 150,
+        "reactivity": "moderate"
+      },
+      "safety": {
+        "level": "moderate",
+        "hazards": ["окислитель", "может вызывать ожоги"],
+        "precautions": ["хранить в темноте", "низкая температура"]
+      },
+      "educational_info": {
+        "group": "пероксиды",
+        "common_uses": ["антисептик", "отбеливатель", "ракетное топливо"],
+        "discovery": "1818 год, Луи Тенар"
+      },
+      "visual": {
+        "color": "linear-gradient(135deg, rgba(220,240,255,0.6), rgba(180,220,240,0.5))",
+        "icon": "💧",
+        "texture": "liquid"
+      }
+    },
+    {
+      "id": "MnO2",
+      "name": "Диоксид марганца",
+      "formula": "MnO₂",
+      "type": "catalyst",
+      "state": "solid",
+      "appearance": "черный порошок",
+      "properties": {
+        "molar_mass": 86.936,
+        "density": 5.03,
+        "melting_point": 535,
+        "reactivity": "low"
+      },
+      "safety": {
+        "level": "moderate",
+        "hazards": ["раздражитель дыхательных путей"],
+        "precautions": ["респиратор", "проветривание"]
+      },
+      "educational_info": {
+        "group": "оксиды",
+        "common_uses": ["катализатор", "батарейки", "стекло"],
+        "discovery": "древность"
+      },
+      "visual": {
+        "color": "linear-gradient(135deg, rgba(80,80,80,0.7), rgba(40,40,40,0.5))",
+        "icon": "⚫",
+        "texture": "powder"
+      }
+    },
+    {
+      "id": "Fe",
+      "name": "Железо",
+      "formula": "Fe",
+      "type": "metal",
+      "state": "solid",
+      "appearance": "серебристо-серый металл",
+      "properties": {
+        "atomic_number": 26,
+        "atomic_mass": 55.845,
+        "melting_point": 1538,
+        "boiling_point": 2862,
+        "density": 7.87,
+        "reactivity": "moderate"
+      },
+      "safety": {
+        "level": "safe",
+        "hazards": ["острые края"],
+        "precautions": ["защита рук"]
+      },
+      "educational_info": {
+        "group": "переходные металлы",
+        "period": 4,
+        "common_uses": ["сталь", "конструкции", "магниты"],
+        "discovery": "древность"
+      },
+      "visual": {
+        "color": "linear-gradient(135deg, rgba(140,140,140,0.7), rgba(80,80,80,0.5))",
+        "icon": "⚙️",
+        "texture": "metallic"
+      }
+    },
+    {
+      "id": "S",
+      "name": "Сера",
+      "formula": "S",
+      "type": "nonmetal",
+      "state": "solid",
+      "appearance": "желтые кристаллы",
+      "properties": {
+        "atomic_number": 16,
+        "atomic_mass": 32.06,
+        "melting_point": 115,
+        "boiling_point": 445,
+        "density": 2.07,
+        "reactivity": "moderate"
+      },
+      "safety": {
+        "level": "moderate",
+        "hazards": ["горючий", "токсичный при горении"],
+        "precautions": ["избегать нагрева", "проветривание"]
+      },
+      "educational_info": {
+        "group": "халькогены",
+        "period": 3,
+        "common_uses": ["серная кислота", "резина", "фунгициды"],
+        "discovery": "древность"
+      },
+      "visual": {
+        "color": "linear-gradient(135deg, rgba(255,220,100,0.7), rgba(200,170,50,0.5))",
+        "icon": "💛",
+        "texture": "crystalline"
+      }
+    }
+  ],
+  "metadata": {
+    "version": "1.0.0",
+    "last_updated": "2026-04-29",
+    "total_reagents": 8,
+    "categories": ["metals", "nonmetals", "acids", "bases", "catalysts", "oxidizers"],
+    "safety_levels": ["safe", "moderate", "dangerous"]
+  }
+}

@@ -1,0 +1,97 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Панель администратора - ChemLab TJ</title>
+  <link rel="icon" href="assets/logo/chemlab-tj-logo.png">
+  <link rel="stylesheet" href="css/admin.css">
+  <script defer src="js/config.js?v=2"></script>
+  <script defer src="js/i18n.js?v=2"></script>
+  <script defer src="js/api.js?v=2"></script>
+  <script defer src="js/auth.js?v=2"></script>
+  <script defer src="js/admin.js?v=2"></script>
+</head>
+<body class="admin-body">
+  <div id="adminLogin" class="admin-login">
+    <h1>Вход администратора</h1>
+    <p>Управление реакциями, веществами, пользователями и статистикой ChemLab TJ.</p>
+    <p class="demo-note">Демо-аккаунты предназначены только для локальной проверки MVP. Данные для входа храните вне публичного интерфейса.</p>
+    <form class="admin-form" id="adminLoginForm">
+      <label>Email <input id="adminEmail" type="email" autocomplete="email" value="admin@chemlab.local" required></label>
+      <label>Пароль <input id="adminPassword" type="password" autocomplete="current-password" required></label>
+      <button class="btn-admin" type="submit">Войти</button>
+      <p class="admin-message" id="adminLoginMessage"></p>
+    </form>
+  </div>
+
+  <div id="adminShell" class="admin-shell" hidden>
+    <aside class="admin-sidebar">
+      <a class="admin-brand" href="index.html">
+        <img src="assets/logo/chemlab-tj-logo.png" alt="Логотип ChemLab TJ">
+        <span>Панель администратора</span>
+      </a>
+      <nav class="admin-nav" aria-label="Разделы администратора">
+        <button class="is-active" type="button" data-admin-section="dashboard">Dashboard</button>
+        <button type="button" data-admin-section="users">Пользователи</button>
+        <button type="button" data-admin-section="reactions">Реакции</button>
+        <button type="button" data-admin-section="substances">Вещества</button>
+        <button type="button" data-admin-section="elements">Элементы</button>
+        <button type="button" data-admin-section="experiments">История опытов</button>
+      </nav>
+      <button class="admin-logout" type="button" id="adminLogout">Выйти</button>
+    </aside>
+
+    <main class="admin-main">
+      <header class="admin-topbar">
+        <div>
+          <h1 id="adminTitle">Dashboard</h1>
+          <p class="muted" id="adminSubtitle">Сводка по пользователям, реакциям и активности.</p>
+        </div>
+        <a class="btn-admin btn-secondary" href="demo.html">Открыть лабораторию</a>
+      </header>
+
+      <section class="admin-section is-active" id="section-dashboard">
+        <div class="stats-grid" id="dashboardStats"></div>
+        <div class="admin-grid">
+          <article class="admin-card"><h2>Последние действия</h2><div class="table-wrap"><table class="admin-table" id="activityTable"></table></div></article>
+          <article class="admin-card"><h2>Последние эксперименты</h2><div class="table-wrap"><table class="admin-table" id="recentExperimentsTable"></table></div></article>
+        </div>
+      </section>
+
+      <section class="admin-section" id="section-users">
+        <div class="table-wrap"><table class="admin-table" id="usersTable"></table></div>
+      </section>
+
+      <section class="admin-section" id="section-reactions">
+        <div class="admin-toolbar"><p class="muted">Добавляйте, редактируйте и выключайте реакции без изменения seed-файлов.</p><button class="btn-admin" type="button" id="addReaction">Добавить реакцию</button></div>
+        <div class="table-wrap"><table class="admin-table" id="reactionsTable"></table></div>
+      </section>
+
+      <section class="admin-section" id="section-substances">
+        <div class="admin-toolbar"><p class="muted">Каталог веществ используется лабораторией и формой реакций.</p><button class="btn-admin" type="button" id="addSubstance">Добавить вещество</button></div>
+        <div class="table-wrap"><table class="admin-table" id="substancesTable"></table></div>
+      </section>
+
+      <section class="admin-section" id="section-elements">
+        <p class="muted">Администратор может дополнять применение, интересные факты, безопасность и свойства элементов.</p>
+        <div class="table-wrap"><table class="admin-table" id="elementsTable"></table></div>
+      </section>
+
+      <section class="admin-section" id="section-experiments">
+        <div class="table-wrap"><table class="admin-table" id="experimentsTable"></table></div>
+      </section>
+    </main>
+  </div>
+
+  <div class="modal" id="adminModal" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+    <div class="modal-panel">
+      <div class="modal-head">
+        <h2 id="modalTitle">Форма</h2>
+        <button class="btn-admin btn-secondary" type="button" id="closeModal">Закрыть</button>
+      </div>
+      <form class="admin-form" id="modalForm"></form>
+    </div>
+  </div>
+</body>
+</html>

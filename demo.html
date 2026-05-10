@@ -1,0 +1,346 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ChemLab TJ - цифровая химическая лаборатория</title>
+  <link rel="icon" href="assets/logo/chemlab-tj-logo.png">
+  <link rel="stylesheet" href="css/main.css">
+  <link rel="stylesheet" href="css/lab.css">
+  <script defer src="js/config.js"></script>
+  <script defer src="js/i18n.js"></script>
+  <script defer src="js/api.js"></script>
+  <script defer src="js/auth.js"></script>
+  <script defer src="js/storage-fallback.js"></script>
+  <script defer src="js/api-client.js"></script>
+  <script defer src="js/app.js"></script>
+  <script defer src="js/data-reactions.js"></script>
+  <script defer src="js/reactions.js"></script>
+  <script defer src="js/lab.js"></script>
+</head>
+<body class="app-body">
+  <header class="topbar">
+    <a class="brand" href="demo.html" aria-label="ChemLab TJ">
+      <span class="brand-mark">CL</span>
+      <span>ChemLab TJ</span>
+    </a>
+    <nav class="main-nav" aria-label="Главная навигация">
+      <a class="is-active" href="#periodic" data-section-link="periodic">Таблица Менделеева</a>
+      <a href="#lab" data-section-link="lab">Лаборатория</a>
+      <a href="#reactions" data-section-link="reactions">Реакции</a>
+      <a href="#tasks" data-section-link="tasks">Задачи</a>
+      <a href="#handbook" data-section-link="handbook">Справочник</a>
+    </nav>
+    <div class="user-area">
+      <div class="auth-widget" id="authWidget">
+        <button class="login-button" type="button" id="authToggle" aria-expanded="false">
+          <span class="avatar" id="authAvatar">?</span>
+          <span id="authUserName">Войти</span>
+        </button>
+        <div class="auth-panel" id="authPanel" hidden>
+          <div class="auth-state" id="authUserPanel" hidden>
+            <strong id="authUserEmail">Пользователь</strong>
+            <small>Ваш прогресс сохраняется в аккаунте</small>
+            <button class="secondary-action" type="button" id="authLogout">Выйти</button>
+          </div>
+          <div class="auth-forms" id="authForms">
+            <form id="loginForm">
+              <strong>Вход</strong>
+              <label>Email<input type="email" id="loginEmail" autocomplete="email" required></label>
+              <label>Пароль<input type="password" id="loginPassword" autocomplete="current-password" required></label>
+              <button class="primary-action" type="submit">Войти</button>
+            </form>
+            <form id="registerForm" hidden>
+              <strong>Регистрация</strong>
+              <label>Имя<input type="text" id="registerName" autocomplete="name" required></label>
+              <label>Email<input type="email" id="registerEmail" autocomplete="email" required></label>
+              <label>Пароль<input type="password" id="registerPassword" autocomplete="new-password" minlength="8" required></label>
+              <button class="primary-action" type="submit">Создать аккаунт</button>
+            </form>
+            <button class="auth-switch" type="button" id="authSwitch">Создать аккаунт</button>
+          </div>
+          <p class="auth-message" id="authMessage" aria-live="polite"></p>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <main class="app-sections">
+    <section class="app-section is-active" id="periodic" data-app-section="periodic" aria-label="Таблица Менделеева">
+      <div class="study-layout periodic-layout">
+        <header class="section-head">
+          <div>
+            <h1>Таблица Менделеева</h1>
+            <p>Поиск, фильтры по типам элементов и карточка с основными свойствами.</p>
+          </div>
+          <label class="search-field">
+            <span>Поиск</span>
+            <input type="search" id="elementSearch" placeholder="H, кислород, натрий">
+          </label>
+        </header>
+        <div class="filter-row" id="elementFilters"></div>
+        <div class="periodic-workspace">
+          <div class="periodic-grid" id="periodicGrid"></div>
+          <article class="element-card" id="elementCard">
+            <span class="card-kicker">Выберите элемент</span>
+            <h2>Карточка элемента</h2>
+            <p>Кликните по ячейке таблицы, чтобы увидеть свойства, применение и краткое описание.</p>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section class="app-section" id="lab" data-app-section="lab" aria-label="Лаборатория">
+      <div class="lab-shell">
+        <aside class="tool-rail" aria-label="Инструменты лаборатории">
+          <div class="tool-menu">
+            <button class="tool-button is-active" type="button" data-tool="equipment"><span class="tool-icon">⚗</span>Оборудование</button>
+            <button class="tool-button" type="button" data-tool="reagents"><span class="tool-icon">▣</span>Реактивы</button>
+            <button class="tool-button" type="button" data-tool="heat"><span class="tool-icon">♨</span>Нагрев</button>
+            <button class="tool-button" type="button" data-tool="measure"><span class="tool-icon">℃</span>Измерения</button>
+            <button class="tool-button" type="button" data-tool="notes"><span class="tool-icon">✎</span>Заметки</button>
+          </div>
+          <div class="tool-drawer">
+            <section class="tool-section is-active" data-tool-section="equipment">
+              <h2>Оборудование</h2>
+              <p>Перетащите сосуд или инструмент на рабочий стол. Основной сосуд автоматически займёт центральный слот.</p>
+              <div class="tool-hints">
+                <span>Сосуд</span><span>Штатив</span><span>Газоотвод</span>
+              </div>
+            </section>
+            <section class="tool-section" data-tool-section="reagents">
+              <h2>Реактивы</h2>
+              <p>Флаконы сгруппированы по классам веществ. При наведении видны название и роль в опыте.</p>
+              <div class="reagent-info" id="reagentInfo">Выберите или наведите реактив.</div>
+            </section>
+            <section class="tool-section" data-tool-section="heat">
+              <h2>Нагрев</h2>
+              <p>Перетащите спиртовку или плитку в слот нагрева под сосудом, затем включите нагрев.</p>
+              <div class="heat-control-card">
+                <div>
+                  <span class="heat-dot" id="heatDot"></span>
+                  <strong id="heatModeText">Нагрев выключен</strong>
+                </div>
+                <button class="secondary-action" type="button" id="drawerHeatToggle">Включить нагрев</button>
+                <label>
+                  Уровень нагрева
+                  <input type="range" id="heatLevel" min="0" max="3" value="0">
+                </label>
+              </div>
+            </section>
+            <section class="tool-section" data-tool-section="measure">
+              <h2>Измерения</h2>
+              <div class="measure-grid">
+                <span><strong id="temperatureValue">22°C</strong>температура</span>
+                <span><strong id="phValue">pH 7</strong>индикатор pH</span>
+                <span><strong id="timerValue">00:00</strong>таймер опыта</span>
+                <span><strong id="volumeValue">0 мл</strong>объём</span>
+              </div>
+            </section>
+            <section class="tool-section" data-tool-section="notes">
+              <h2>Заметки</h2>
+              <textarea id="manualNote" rows="4" placeholder="Запишите наблюдение..."></textarea>
+              <div class="note-actions">
+                <button class="secondary-action" type="button" id="addNote">Добавить</button>
+                <button class="secondary-action" type="button" id="clearNotes">Очистить</button>
+              </div>
+              <div class="note-list" id="noteList"></div>
+            </section>
+          </div>
+        </aside>
+
+        <section class="lab-stage" aria-label="Рабочая зона лаборатории">
+          <div class="lab-wall">
+            <div class="shelf shelf-left">
+              <div class="shelf-board"></div>
+              <div class="bottle-row" id="shelfReagents"></div>
+              <div class="shelf-board lower"></div>
+              <div class="tube-rack"><span></span><span></span><span></span><span></span><span></span></div>
+            </div>
+            <div class="wall-periodic" aria-hidden="true">
+              <p>Периодическая система элементов</p>
+              <div class="mini-table" id="wallPeriodicGrid"></div>
+            </div>
+            <div class="lab-stand">
+              <span></span><span></span><span></span>
+            </div>
+            <div class="shelf shelf-right">
+              <div class="outline-glass flask-shape"></div>
+              <div class="outline-glass round-shape"></div>
+              <div class="outline-glass tube-shape"></div>
+              <div class="shelf-board"></div>
+            </div>
+          </div>
+
+          <div class="bench-dropzone" id="benchDropzone">
+            <div class="bench-back"></div>
+            <div class="bench-surface"></div>
+            <div class="drop-zone-mark drop-zone-tools">инструменты</div>
+            <div class="drop-zone-mark drop-zone-reaction">активный опыт</div>
+            <div class="drop-zone-mark drop-zone-reagents">реактивы</div>
+            <div class="slot-label slot-vessel">основной сосуд</div>
+            <div class="slot-label slot-heater">нагреватель</div>
+            <div class="slot-label slot-tool">газоотвод / инструмент</div>
+            <div class="default-apparatus" aria-hidden="true">
+              <div class="tripod">
+                <div class="tripod-ring"></div>
+                <div class="beaker-demo"><div class="beaker-liquid"></div></div>
+                <span class="leg l1"></span><span class="leg l2"></span><span class="leg l3"></span>
+              </div>
+              <button class="burner" type="button" id="heatToggle" aria-pressed="false" aria-label="Включить нагрев">
+                <span class="flame"></span>
+                <span class="burner-base"></span>
+              </button>
+              <div class="jar-demo">CaCO<sub>3</sub></div>
+              <div class="wash-bottle"></div>
+              <div class="mortar"></div>
+              <div class="pipette"></div>
+            </div>
+            <div class="workspace-items" id="workspaceItems"></div>
+            <div class="reaction-vessel" id="reactionVessel" aria-live="polite">
+              <div class="vessel-neck"></div>
+              <div class="vessel-glass">
+                <div class="reaction-liquid" id="reactionLiquid"></div>
+                <div class="solid-layer" id="solidLayer"></div>
+                <div class="precipitate" id="precipitate"></div>
+                <div class="precip-particles" id="precipParticles"></div>
+                <div class="bubbles" id="bubbles"></div>
+                <div class="flash" id="flash"></div>
+              </div>
+              <div class="gas-haze" id="gasHaze"></div>
+              <div class="gas-outlet" id="gasOutlet" aria-hidden="true">
+                <span class="outlet-line"></span>
+                <span class="outlet-bubble"></span>
+              </div>
+              <div class="gas-label" id="gasLabel" aria-hidden="true"></div>
+            </div>
+          </div>
+        </section>
+
+        <aside class="experiment-panel">
+          <div class="active-experiment">
+            <span>Активный сценарий</span>
+            <strong id="activeExperimentName">Получение углекислого газа</strong>
+          </div>
+          <div class="progress-summary" id="progressSummary" hidden>
+            <span>Прогресс</span>
+            <strong id="progressCompleted">0 экспериментов</strong>
+            <small id="progressLast">Нет сохранённых попыток</small>
+          </div>
+          <div class="tabs" role="tablist">
+            <button class="tab is-active" type="button" data-panel-tab="instruction">Инструкция</button>
+            <button class="tab" type="button" data-panel-tab="conditions">Условия</button>
+            <button class="tab" type="button" data-panel-tab="result">Результат</button>
+          </div>
+          <div class="mode-switch" role="group" aria-label="Lab mode">
+            <button class="mode-button is-active" type="button" id="guidedMode">С подсказками</button>
+            <button class="mode-button" type="button" id="freeMode">Свободно</button>
+          </div>
+          <section class="tab-panel is-active" data-panel="instruction" id="instructionPanel"></section>
+          <section class="tab-panel" data-panel="conditions">
+            <h2>Условия опыта</h2>
+            <div class="condition-row"><span>Активный сосуд</span><strong id="containerName">не выбран</strong></div>
+            <div class="condition-row"><span>Нагрев</span><strong id="heatStatus">выключен</strong></div>
+            <div class="condition-row"><span>Необходимые вещества</span><strong id="requiredReagents">CaCO3 + HCl</strong></div>
+            <div class="condition-row"><span>Выбрано</span><strong id="selectedReagents">нет реактивов</strong></div>
+            <div class="condition-row"><span>Готовность</span><strong id="readinessText">добавьте сосуд и два реактива</strong></div>
+            <div class="condition-row"><span>Ожидаемый признак</span><strong id="expectedEffect">выделение газа</strong></div>
+            <div class="composition-box">
+              <span>Состав сосуда</span>
+              <div class="composition-list" id="compositionList"></div>
+            </div>
+            <label class="switch" id="heatSwitchRow">
+              <input type="checkbox" id="heatCheckbox">
+              <span>Использовать нагреватель</span>
+            </label>
+          </section>
+          <section class="tab-panel" data-panel="result">
+            <h2>Результат</h2>
+            <p class="result-message" id="resultMessage">Перетащите сосуд и реактивы на рабочий стол. После каждого действия состав опыта обновится.</p>
+            <div class="result-details"><span>Тип реакции</span><strong id="reactionType">—</strong></div>
+            <div class="result-details"><span>Уравнение</span><strong id="reactionEquation">—</strong></div>
+            <div class="result-details"><span>Наблюдение</span><strong id="reactionObservation">—</strong></div>
+            <div class="result-details"><span>Объяснение</span><strong id="reactionExplanation">—</strong></div>
+            <div class="effect-guide">
+              <span>Возможные признаки реакции</span>
+              <div>
+                <button type="button" data-effect-filter="gas">газ</button>
+                <button type="button" data-effect-filter="precipitate">осадок</button>
+                <button type="button" data-effect-filter="colorChange">цвет</button>
+                <button type="button" data-effect-filter="heat">тепло</button>
+                <button type="button" data-effect-filter="steam">пар</button>
+                <button type="button" data-effect-filter="metalReaction">металл</button>
+                <button type="button" data-effect-filter="noReaction">нет реакции</button>
+              </div>
+            </div>
+          </section>
+          <div class="panel-actions">
+            <button class="primary-action" type="button" id="checkReaction">Проверить результат</button>
+            <button class="secondary-action" type="button" id="resetLab">Сбросить опыт</button>
+          </div>
+        </aside>
+
+        <section class="equipment-dock" aria-label="Панель предметов">
+          <div class="dock-tabs">
+            <button class="dock-tab is-active" type="button" data-dock-category="glassware">Посуда</button>
+            <button class="dock-tab" type="button" data-dock-category="tools">Инструменты</button>
+            <button class="dock-tab" type="button" data-dock-category="heating">Нагрев</button>
+            <button class="dock-tab" type="button" data-dock-category="measure">Измерения</button>
+            <button class="dock-tab" type="button" data-dock-category="other">Прочее</button>
+          </div>
+          <div class="dock-items" id="equipmentDock"></div>
+        </section>
+      </div>
+    </section>
+
+    <section class="app-section" id="reactions" data-app-section="reactions" aria-label="Реакции">
+      <div class="study-layout">
+        <header class="section-head">
+          <div>
+            <h1>Каталог реакций</h1>
+            <p>Выберите реакцию, посмотрите условия и запустите её в лаборатории.</p>
+          </div>
+          <label class="search-field">
+            <span>Поиск</span>
+            <input type="search" id="reactionSearch" placeholder="CO2, HCl, осадок">
+          </label>
+        </header>
+        <div class="filter-row" id="reactionFilters"></div>
+        <div class="reaction-catalog" id="reactionCatalog"></div>
+      </div>
+    </section>
+
+    <section class="app-section" id="tasks" data-app-section="tasks" aria-label="Задачи">
+      <div class="study-layout">
+        <header class="section-head">
+          <div>
+            <h1>Учебные задачи</h1>
+            <p>Практические сценарии с подсказками, запуском в лаборатории и прогрессом.</p>
+          </div>
+          <div class="progress-card">
+            <strong id="taskProgress">0 из 4</strong>
+            <span id="taskScore">0 баллов · 0%</span>
+          </div>
+        </header>
+        <div class="task-list" id="taskList"></div>
+      </div>
+    </section>
+
+    <section class="app-section" id="handbook" data-app-section="handbook" aria-label="Справочник">
+      <div class="study-layout">
+        <header class="section-head">
+          <div>
+            <h1>Справочник</h1>
+            <p>Техника безопасности, посуда, оборудование, типы реакций и основные понятия.</p>
+          </div>
+          <label class="search-field">
+            <span>Поиск</span>
+            <input type="search" id="handbookSearch" placeholder="pH, штатив, безопасность">
+          </label>
+        </header>
+        <div class="handbook-grid" id="handbookGrid"></div>
+      </div>
+    </section>
+  </main>
+</body>
+</html>

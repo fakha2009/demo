@@ -1,0 +1,804 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ChemLab TJ</title>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#07090f;--bg2:#0d1117;--bg3:#111827;
+  --s1:#141c2e;--s2:#1a2540;--s3:#1f2d4a;
+  --bd:#1e2d42;--bd2:#2a3f5f;--bd3:#3a5580;
+  --t1:#eef2ff;--t2:#8ba3c7;--t3:#4d6a8a;
+  --a:#22d3ee;--a2:#3b82f6;--a3:#6366f1;
+  --g:#10b981;--am:#f59e0b;--re:#ef4444;
+  --grd:linear-gradient(135deg,#22d3ee,#3b82f6);
+  --glass:rgba(255,255,255,.045);--shadow:0 24px 80px rgba(0,0,0,.38);
+  --r:14px;--r2:10px;--r3:24px;
+}
+html{scroll-behavior:smooth}
+body{background:radial-gradient(circle at 20% 0%,rgba(34,211,238,.08),transparent 32%),radial-gradient(circle at 90% 10%,rgba(99,102,241,.08),transparent 28%),var(--bg);color:var(--t1);font-family:'Segoe UI',system-ui,sans-serif;line-height:1.65;overflow-x:hidden}
+::selection{background:rgba(34,211,238,.2);color:var(--a)}
+::-webkit-scrollbar{width:5px}::-webkit-scrollbar-track{background:var(--bg)}::-webkit-scrollbar-thumb{background:var(--bd3);border-radius:3px}
+
+/* ─ GLOW BLOBS ─ */
+.blob{position:fixed;border-radius:50%;filter:blur(100px);pointer-events:none;z-index:0;opacity:.35}
+.blob1{width:600px;height:600px;background:radial-gradient(circle,#22d3ee22,transparent 70%);top:-200px;right:-200px}
+.blob2{width:500px;height:500px;background:radial-gradient(circle,#3b82f618,transparent 70%);bottom:-150px;left:-150px}
+.blob3{width:400px;height:400px;background:radial-gradient(circle,#6366f112,transparent 70%);top:40%;left:30%}
+
+/* ─ HEADER ─ */
+.hdr{position:fixed;inset:0 0 auto;z-index:200;height:64px;display:flex;align-items:center;padding:0 3%;border-bottom:1px solid transparent;transition:.3s}
+.hdr.scrolled{background:rgba(7,9,15,.9);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border-color:var(--bd)}
+.logo{display:flex;align-items:center;gap:10px;text-decoration:none;font-weight:800;font-size:1.1rem;color:var(--t1);letter-spacing:-.02em}
+.logo-mark{width:34px;height:34px;border-radius:9px;background:var(--grd);display:flex;align-items:center;justify-content:center;font-size:17px;flex-shrink:0;box-shadow:0 0 16px rgba(34,211,238,.35)}
+.logo-mark img{width:100%;height:100%;object-fit:contain;border-radius:9px}
+.nav-links{display:flex;gap:1.8rem;margin:0 auto}
+.nav-links a{color:var(--t3);text-decoration:none;font-size:.85rem;font-weight:500;transition:.2s;letter-spacing:.01em}
+.nav-links a:hover{color:var(--a)}
+.hdr-right{display:flex;align-items:center;gap:8px}
+.lang-switch{display:flex;background:var(--s1);border:1px solid var(--bd);border-radius:8px;overflow:hidden}
+.lang-switch button{padding:.3rem .7rem;font-size:.78rem;font-weight:600;border:none;background:transparent;color:var(--t3);cursor:pointer;transition:.2s}
+.lang-switch button.active{background:var(--grd);color:#fff}
+.btn{display:inline-flex;align-items:center;gap:6px;padding:.5rem 1.1rem;border-radius:8px;font-size:.82rem;font-weight:600;cursor:pointer;text-decoration:none;border:none;transition:.2s}
+.btn-p{background:var(--grd);color:#fff;box-shadow:0 0 18px rgba(34,211,238,.25)}
+.btn-p:hover{opacity:.9;box-shadow:0 0 28px rgba(34,211,238,.4)}
+.btn-o{background:transparent;color:var(--a);border:1px solid var(--bd2)}
+.btn-o:hover{border-color:var(--a);background:rgba(34,211,238,.06)}
+.burger{display:none;flex-direction:column;gap:4px;cursor:pointer;padding:6px;background:transparent;border:none}
+.burger span{display:block;width:20px;height:1.5px;background:var(--t2);border-radius:2px;transition:.3s}
+
+/* ─ MOBILE NAV ─ */
+.mob-nav{display:none;position:fixed;inset:60px 0 auto;background:rgba(7,9,15,.97);backdrop-filter:blur(20px);border-bottom:1px solid var(--bd);padding:1rem;z-index:199}
+.mob-nav a{display:block;padding:.65rem 1rem;color:var(--t2);text-decoration:none;border-radius:8px;font-size:.9rem;transition:.15s}
+.mob-nav a:hover{background:var(--s1);color:var(--a)}
+.mob-nav.open{display:block}
+
+/* ─ HERO ─ */
+.hero{min-height:100vh;display:grid;grid-template-columns:1fr 1fr;align-items:center;gap:4rem;padding:7rem 6% 5rem;max-width:1320px;margin:0 auto;position:relative;z-index:1}
+.hero-eyebrow{display:inline-flex;align-items:center;gap:8px;background:rgba(34,211,238,.08);border:1px solid rgba(34,211,238,.2);border-radius:100px;padding:.3rem .9rem;font-size:.75rem;font-weight:600;color:var(--a);margin-bottom:1.4rem;letter-spacing:.04em;text-transform:uppercase}
+.dot-pulse{width:6px;height:6px;border-radius:50%;background:var(--a);animation:dp 2s ease-in-out infinite}
+@keyframes dp{0%,100%{transform:scale(1);opacity:1}50%{transform:scale(1.5);opacity:.5}}
+.hero h1{font-size:clamp(2.2rem,4.5vw,3.4rem);font-weight:900;line-height:1.1;letter-spacing:-.04em;margin-bottom:1.2rem}
+.grad-text{background:var(--grd);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.hero-sub{font-size:1.08rem;color:var(--t2);margin-bottom:1.25rem;max-width:560px;line-height:1.75}
+.hero-cta{display:flex;gap:.8rem;flex-wrap:wrap;margin-bottom:2.5rem}
+.hero-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:.8rem}
+.hstat{background:linear-gradient(180deg,rgba(255,255,255,.05),rgba(255,255,255,.02));border:1px solid var(--bd);border-radius:var(--r2);padding:.95rem;text-align:center;transition:.2s;box-shadow:0 12px 30px rgba(0,0,0,.18)}
+.hstat:hover{border-color:var(--bd2);transform:translateY(-2px)}
+.hstat strong{display:block;font-size:1.35rem;font-weight:900;background:var(--grd);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.hstat span{font-size:.72rem;color:var(--t3)}
+
+/* ─ HERO VISUAL ─ */
+.hero-vis{position:relative;display:flex;align-items:center;justify-content:center;height:480px}
+.vis-ring{position:absolute;border-radius:50%;border:1px solid;animation:spin linear infinite}
+.vr1{width:320px;height:320px;border-color:rgba(34,211,238,.15);animation-duration:20s}
+.vr2{width:240px;height:240px;border-color:rgba(59,130,246,.2);animation-duration:14s;animation-direction:reverse}
+.vr3{width:160px;height:160px;border-color:rgba(99,102,241,.25);animation-duration:9s}
+@keyframes spin{to{transform:rotate(360deg)}}
+.orb-dot{position:absolute;width:8px;height:8px;border-radius:50%;background:var(--a);box-shadow:0 0 10px var(--a)}
+.orb1{top:0;left:50%;transform:translate(-50%,-50%)}
+.orb2{bottom:0;left:50%;transform:translate(-50%,50%)}
+.orb3{left:0;top:50%;transform:translate(-50%,-50%);background:var(--a2)}
+.vis-center{position:relative;z-index:2}
+.fcard{position:absolute;background:rgba(20,28,46,.9);border:1px solid var(--bd2);border-radius:var(--r);padding:.75rem 1rem;backdrop-filter:blur(10px);white-space:nowrap;z-index:3}
+.fcard:nth-of-type(1){top:8%;right:-10%;animation:fl 5s ease-in-out infinite}
+.fcard:nth-of-type(2){bottom:12%;left:-15%;animation:fl 5s ease-in-out infinite .8s}
+.fcard:nth-of-type(3){top:40%;right:-18%;animation:fl 5s ease-in-out infinite 1.6s}
+@keyframes fl{0%,100%{transform:translateY(0)}50%{transform:translateY(-8px)}}
+.fcard-label{font-size:.65rem;color:var(--t3);text-transform:uppercase;letter-spacing:.06em;margin-bottom:2px}
+.fcard-val{font-size:.9rem;font-weight:700;color:var(--t1)}
+.fcard-sub{font-size:.72rem;color:var(--t2)}
+.fcard-g .fcard-val{color:var(--g)}
+
+/* ─ SECTION ─ */
+.sec{padding:6rem 6%;max-width:1320px;margin:0 auto;position:relative;z-index:1}
+.sec-label{font-size:.7rem;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--a);margin-bottom:.6rem}
+.sec-title{font-size:clamp(1.7rem,3vw,2.4rem);font-weight:900;line-height:1.15;letter-spacing:-.03em;margin-bottom:.9rem}
+.sec-lead{font-size:.97rem;color:var(--t2);max-width:560px;line-height:1.7}
+.sep{height:1px;background:linear-gradient(90deg,transparent,var(--bd),transparent);margin:0}
+
+/* ─ STATS BAND ─ */
+.stats-band{background:var(--bg2);border-top:1px solid var(--bd);border-bottom:1px solid var(--bd);padding:5rem 6%}
+.stats-band-inner{max-width:1320px;margin:0 auto;display:grid;grid-template-columns:1fr 1.8fr;gap:4rem;align-items:start}
+.stats-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:.9rem}
+.scard{background:var(--s1);border:1px solid var(--bd);border-radius:var(--r);padding:1.1rem;transition:.25s;cursor:default}
+.scard:hover{border-color:var(--a);transform:translateY(-3px);box-shadow:0 8px 32px rgba(34,211,238,.1)}
+.scard strong{display:block;font-size:1.4rem;font-weight:900;color:var(--a);margin-bottom:.25rem}
+.scard span{font-size:.74rem;color:var(--t3);line-height:1.4}
+.scard.hl{border-color:rgba(34,211,238,.25);background:linear-gradient(135deg,rgba(34,211,238,.07),rgba(59,130,246,.04))}
+.scard.hl strong{font-size:1.8rem}
+
+/* ─ FEATURES ─ */
+.feat-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1.2rem;margin-top:3rem}
+.feat{background:var(--s1);border:1px solid var(--bd);border-radius:var(--r);padding:1.6rem;transition:.25s;position:relative;overflow:hidden}
+.feat::before{content:'';position:absolute;inset:0;background:var(--grd);opacity:0;transition:.3s}
+.feat:hover{transform:translateY(-4px);border-color:var(--bd3);box-shadow:0 12px 40px rgba(34,211,238,.12)}
+.feat:hover::before{opacity:.04}
+.feat-ico{font-size:1.6rem;margin-bottom:1rem;display:block}
+.feat h3{font-size:.95rem;font-weight:700;margin-bottom:.5rem;position:relative}
+.feat p{font-size:.84rem;color:var(--t2);line-height:1.65;position:relative}
+
+/* ─ LAB ─ */
+.lab-wrap{background:var(--bg2);border-top:1px solid var(--bd);border-bottom:1px solid var(--bd)}
+.lab-inner{max-width:1320px;margin:0 auto;padding:6rem 6%}
+.lab-stage{background:linear-gradient(145deg,rgba(17,24,39,.98),rgba(14,20,34,.94));border:1px solid rgba(34,211,238,.16);border-radius:24px;padding:2.5rem;display:grid;grid-template-columns:1.1fr 1fr;gap:3rem;align-items:center;margin-top:2.5rem;position:relative;overflow:hidden;box-shadow:var(--shadow)}
+.lab-stage::before{content:'';position:absolute;inset:0;background:linear-gradient(135deg,rgba(34,211,238,.03),rgba(59,130,246,.02));pointer-events:none}
+
+/* reaction picker */
+.rxn-grid{display:grid;grid-template-columns:1fr 1fr;gap:.7rem;margin-bottom:1.2rem}
+.rxn-btn{background:var(--s1);border:1.5px solid var(--bd);border-radius:var(--r2);padding:.65rem .8rem;font-size:.8rem;font-weight:600;color:var(--t2);cursor:pointer;transition:.2s;text-align:center;line-height:1.4}
+.rxn-btn:hover{border-color:var(--bd2);color:var(--t1)}
+.rxn-btn.active{border-color:var(--a);background:rgba(34,211,238,.08);color:var(--a)}
+
+/* run btn */
+.run-btn{width:100%;padding:.9rem;border-radius:var(--r2);background:var(--grd);color:#fff;font-weight:700;font-size:.95rem;border:none;cursor:pointer;transition:.2s;letter-spacing:.01em;box-shadow:0 0 20px rgba(34,211,238,.2)}
+.run-btn:hover{opacity:.9;box-shadow:0 0 32px rgba(34,211,238,.35);transform:translateY(-1px)}
+.run-btn:active{transform:scale(.99)}
+.run-btn:disabled{opacity:.5;cursor:default;transform:none}
+
+/* result panel */
+.res-panel{margin-top:1rem;background:var(--s1);border:1px solid var(--bd);border-radius:var(--r2);padding:1.1rem;min-height:90px;transition:.3s}
+.res-panel.show{border-color:var(--g)}
+.res-lbl{font-size:.68rem;text-transform:uppercase;letter-spacing:.1em;color:var(--t3);margin-bottom:.4rem}
+.res-eq{font-size:.95rem;font-weight:700;color:var(--t1);margin-bottom:.3rem}
+.res-obs{font-size:.82rem;line-height:1.5}
+
+/* Beaker SVG */
+.bkr-wrap{display:flex;justify-content:center;align-items:center;flex-direction:column;gap:1rem;position:relative}
+
+
+/* ─ PRESENTATION EXTRAS ─ */
+.trust-row{display:flex;flex-wrap:wrap;gap:.55rem;margin:0 0 1.6rem}
+.trust-chip{display:inline-flex;align-items:center;gap:.4rem;border:1px solid rgba(34,211,238,.18);background:rgba(34,211,238,.055);color:var(--t2);padding:.42rem .72rem;border-radius:999px;font-size:.76rem;font-weight:650;backdrop-filter:blur(12px)}
+.trust-chip b{color:var(--a);font-weight:800}.hero-copy{position:relative}.hero-copy::after{content:'';position:absolute;left:-2rem;bottom:-2rem;width:180px;height:180px;background:radial-gradient(circle,rgba(34,211,238,.11),transparent 68%);z-index:-1}
+.why-sec{padding:5.6rem 6%;max-width:1320px;margin:0 auto;position:relative;z-index:1}.why-grid{margin-top:2.4rem;display:grid;grid-template-columns:1.05fr 1fr;gap:1.2rem;align-items:stretch}.why-card{background:linear-gradient(145deg,rgba(20,28,46,.9),rgba(17,24,39,.72));border:1px solid var(--bd);border-radius:20px;padding:1.4rem;box-shadow:0 18px 60px rgba(0,0,0,.18)}.why-main{border-color:rgba(34,211,238,.25);position:relative;overflow:hidden}.why-main::before{content:'';position:absolute;inset:auto -20% -45% -20%;height:180px;background:radial-gradient(circle,rgba(34,211,238,.15),transparent 72%)}.why-card h3{font-size:1rem;margin-bottom:.6rem}.why-card p{font-size:.86rem;color:var(--t2);line-height:1.7}.why-list{display:grid;gap:.85rem}.why-row{display:grid;grid-template-columns:38px 1fr;gap:.8rem;align-items:start;background:rgba(255,255,255,.035);border:1px solid rgba(255,255,255,.06);border-radius:16px;padding:.9rem}.why-ico{width:38px;height:38px;border-radius:12px;background:rgba(34,211,238,.08);display:flex;align-items:center;justify-content:center}.why-row strong{font-size:.88rem}.why-row span{display:block;font-size:.78rem;color:var(--t3);line-height:1.55;margin-top:.12rem}
+.demo-sec{background:linear-gradient(180deg,rgba(13,17,23,.65),rgba(7,9,15,.25));border-top:1px solid var(--bd);border-bottom:1px solid var(--bd);padding:4.8rem 6%;position:relative;z-index:1}.demo-inner{max-width:1320px;margin:0 auto}.demo-strip{display:grid;grid-template-columns:repeat(6,1fr);gap:.8rem;margin-top:2.2rem}.demo-step{background:rgba(20,28,46,.78);border:1px solid var(--bd);border-radius:16px;padding:1rem;min-height:128px;position:relative;overflow:hidden}.demo-step::after{content:'';position:absolute;inset:auto .8rem .8rem auto;width:34px;height:34px;border-radius:50%;background:rgba(34,211,238,.08)}.demo-step em{font-style:normal;color:var(--a);font-size:.74rem;font-weight:800}.demo-step strong{display:block;font-size:.86rem;margin:.35rem 0}.demo-step span{display:block;color:var(--t3);font-size:.75rem;line-height:1.45}
+.lab-hints{display:flex;flex-wrap:wrap;justify-content:center;gap:.5rem}.lab-hint{border:1px solid rgba(34,211,238,.18);background:rgba(34,211,238,.055);border-radius:999px;padding:.34rem .62rem;color:var(--t2);font-size:.72rem;font-weight:650}.lab-hint:nth-child(2){border-color:rgba(16,185,129,.2);background:rgba(16,185,129,.06)}.lab-hint:nth-child(3){border-color:rgba(245,158,11,.2);background:rgba(245,158,11,.06)}
+.road-grid{grid-template-columns:repeat(4,1fr)}.road-grid::after{left:12.5%;right:12.5%}.road-item{background:rgba(20,28,46,.55);border:1px solid var(--bd);border-radius:18px;padding:1.2rem .9rem;transition:.25s}.road-item:hover{transform:translateY(-4px);border-color:rgba(34,211,238,.28);box-shadow:0 16px 45px rgba(34,211,238,.08)}
+.foot-links{display:flex;gap:1rem;flex-wrap:wrap;justify-content:center}.foot-links a{color:var(--t3);text-decoration:none;font-size:.75rem}.foot-links a:hover{color:var(--a)}
+@media(max-width:1024px){.trust-row{justify-content:center}.why-grid{grid-template-columns:1fr}.demo-strip{grid-template-columns:repeat(3,1fr)}.road-grid{grid-template-columns:1fr 1fr}.road-grid::after{display:none}}
+@media(max-width:600px){.trust-row{justify-content:flex-start}.trust-chip{font-size:.72rem}.why-sec{padding:4rem 5%}.demo-sec{padding:4rem 5%}.demo-strip{grid-template-columns:1fr}.road-grid{grid-template-columns:1fr}.lab-stage{padding:1.25rem;border-radius:18px}.bkr-wrap svg{max-width:100%;height:auto}.hdr-right .btn-p{display:none}}
+
+/* ─ ROADMAP ─ */
+.road-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:2rem;margin-top:3rem;position:relative}
+.road-grid::after{content:'';position:absolute;top:27px;left:16.7%;right:16.7%;height:1px;background:linear-gradient(90deg,var(--a),var(--a2));opacity:.3}
+.road-item{text-align:center;position:relative;z-index:1}
+.road-num{width:54px;height:54px;border-radius:50%;background:var(--grd);display:flex;align-items:center;justify-content:center;font-weight:900;font-size:1rem;color:#fff;margin:0 auto 1.2rem;box-shadow:0 0 24px rgba(34,211,238,.3)}
+.road-item h3{font-size:.95rem;font-weight:700;margin-bottom:.4rem}
+.road-item p{font-size:.83rem;color:var(--t2);line-height:1.6}
+
+/* ─ FOOTER ─ */
+footer{background:var(--bg2);border-top:1px solid var(--bd);padding:2.5rem 6%;display:flex;justify-content:space-between;align-items:center;position:relative;z-index:1}
+.foot-brand{display:flex;align-items:center;gap:10px}
+.foot-brand div{display:flex;flex-direction:column}
+.foot-brand strong{font-size:.95rem;font-weight:700}
+.foot-brand span{font-size:.75rem;color:var(--t3)}
+footer p{font-size:.75rem;color:var(--t3)}
+
+/* ─ REVEAL ─ */
+.rv{opacity:0;transform:translateY(20px);transition:.65s cubic-bezier(.22,1,.36,1)}
+.rv.in{opacity:1;transform:none}
+
+/* ─ RESPONSIVE ─ */
+@media(max-width:1024px){
+  .hero{grid-template-columns:1fr;padding-top:6.5rem;text-align:center}
+  .hero-sub{max-width:100%}
+  .hero-cta{justify-content:center}
+  .hero-vis{display:none}
+  .stats-band-inner{grid-template-columns:1fr}
+  .feat-grid{grid-template-columns:1fr 1fr}
+  .lab-stage{grid-template-columns:1fr}
+  .road-grid{grid-template-columns:1fr;gap:1.2rem}
+  .road-grid::after{display:none}
+  .nav-links{display:none}
+  .burger{display:flex}
+  footer{flex-direction:column;gap:1rem;text-align:center}
+}
+@media(max-width:600px){
+  .hero{padding:6rem 5% 3rem}
+  .sec{padding:4rem 5%}
+  .lab-inner{padding:4rem 5%}
+  .feat-grid{grid-template-columns:1fr}
+  .stats-grid{grid-template-columns:1fr 1fr}
+  .hero-stats{grid-template-columns:1fr}
+  .rxn-grid{grid-template-columns:1fr}
+}
+
+
+/* ─ FINAL PREMIUM PASS ─ */
+.hdr{background:linear-gradient(180deg,rgba(7,9,15,.72),rgba(7,9,15,.18));backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px)}
+.logo-mark{position:relative;overflow:hidden}.logo-mark::after{content:'';position:absolute;inset:-30%;background:linear-gradient(120deg,transparent,rgba(255,255,255,.36),transparent);transform:translateX(-140%) rotate(18deg);animation:shine 5.4s ease-in-out infinite}@keyframes shine{0%,72%{transform:translateX(-140%) rotate(18deg)}100%{transform:translateX(140%) rotate(18deg)}}
+.hero{isolation:isolate}.hero::before{content:'';position:absolute;inset:90px 3% 50px;border:1px solid rgba(34,211,238,.08);border-radius:34px;background:linear-gradient(145deg,rgba(255,255,255,.025),transparent 42%);z-index:-1;box-shadow:0 40px 120px rgba(0,0,0,.24)}
+.hero h1{max-width:650px}.hero-sub{border-left:2px solid rgba(34,211,238,.36);padding-left:1rem}.hero-cta .btn{min-height:42px}.btn{will-change:transform}.btn:hover{transform:translateY(-1px)}
+.hero-vis::before{content:'';position:absolute;width:370px;height:370px;border-radius:50%;background:radial-gradient(circle,rgba(34,211,238,.13),transparent 66%);filter:blur(6px)}
+.micro-board{position:absolute;left:4%;top:25%;width:170px;background:rgba(7,13,24,.78);border:1px solid rgba(34,211,238,.2);border-radius:18px;padding:.85rem;box-shadow:0 24px 70px rgba(0,0,0,.28);backdrop-filter:blur(16px);animation:fl 5s ease-in-out infinite .45s;z-index:4}.micro-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:.7rem}.micro-top span{font-size:.62rem;color:var(--t3);text-transform:uppercase;letter-spacing:.08em}.micro-top b{font-size:.62rem;color:var(--g);letter-spacing:.06em}.atom-grid{display:grid;grid-template-columns:1fr 1fr;gap:.45rem}.atom-grid span{display:flex;align-items:center;justify-content:center;min-height:34px;border-radius:11px;background:rgba(34,211,238,.07);border:1px solid rgba(34,211,238,.12);font-size:.82rem;font-weight:800;color:var(--t1)}.signal-line{height:3px;background:rgba(255,255,255,.06);border-radius:99px;margin-top:.75rem;overflow:hidden}.signal-line i{display:block;width:42%;height:100%;border-radius:99px;background:var(--grd);animation:sweep 2.2s ease-in-out infinite}@keyframes sweep{0%{transform:translateX(-120%)}100%{transform:translateX(260%)}}
+.stats-band{background:linear-gradient(180deg,rgba(13,17,23,.98),rgba(10,14,24,.98))}.scard{min-height:112px;display:flex;flex-direction:column;justify-content:center}.scard strong{letter-spacing:-.03em}.scard.hl{box-shadow:inset 0 0 0 1px rgba(34,211,238,.07),0 20px 70px rgba(34,211,238,.06)}
+.feat{min-height:190px}.feat-ico{width:48px;height:48px;border-radius:15px;display:flex;align-items:center;justify-content:center;background:rgba(34,211,238,.07);border:1px solid rgba(34,211,238,.12)}
+.why-main{display:flex;flex-direction:column;justify-content:flex-end;min-height:260px}.why-main h3{font-size:1.35rem;letter-spacing:-.03em}.why-main p{font-size:.95rem}.why-row:hover,.demo-step:hover,.logic-card:hover{border-color:rgba(34,211,238,.28);transform:translateY(-3px)}.why-row,.demo-step,.logic-card{transition:.25s ease}
+.demo-step{box-shadow:0 18px 46px rgba(0,0,0,.16)}.demo-step strong{font-size:.92rem}.demo-step em{display:inline-flex;width:30px;height:30px;border-radius:10px;align-items:center;justify-content:center;background:rgba(34,211,238,.08);border:1px solid rgba(34,211,238,.14)}
+.logic-sec{padding:5.4rem 6%;position:relative;z-index:1;background:radial-gradient(circle at 85% 0%,rgba(34,211,238,.08),transparent 34%),var(--bg)}.logic-inner{max-width:1320px;margin:0 auto}.logic-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:1rem;margin-top:2.4rem}.logic-card{background:linear-gradient(145deg,rgba(20,28,46,.78),rgba(15,23,42,.58));border:1px solid var(--bd);border-radius:20px;padding:1.25rem;min-height:190px;position:relative;overflow:hidden}.logic-card::after{content:'';position:absolute;right:-36px;bottom:-46px;width:110px;height:110px;border-radius:50%;background:rgba(34,211,238,.06)}.logic-icon{width:44px;height:44px;border-radius:15px;background:var(--grd);display:flex;align-items:center;justify-content:center;font-weight:900;font-size:1.25rem;margin-bottom:1rem;box-shadow:0 14px 36px rgba(34,211,238,.18)}.logic-card h3{font-size:1rem;margin-bottom:.45rem}.logic-card p{font-size:.82rem;color:var(--t2);line-height:1.65}
+.lab-wrap{background:linear-gradient(180deg,rgba(13,17,23,.96),rgba(7,9,15,.96))}.lab-stage{grid-template-columns:minmax(0,1.02fr) minmax(320px,.98fr)}.lab-stage::after{content:'';position:absolute;inset:1px;border-radius:23px;border:1px solid rgba(255,255,255,.035);pointer-events:none}.rxn-btn{background:linear-gradient(180deg,rgba(255,255,255,.052),rgba(255,255,255,.025));box-shadow:inset 0 1px 0 rgba(255,255,255,.035)}.rxn-btn.active{box-shadow:0 0 0 3px rgba(34,211,238,.07),inset 0 1px 0 rgba(255,255,255,.06)}.res-panel{background:linear-gradient(180deg,rgba(20,28,46,.92),rgba(15,23,42,.86));box-shadow:inset 0 1px 0 rgba(255,255,255,.035)}
+.bkr-wrap::before{content:'';position:absolute;width:270px;height:270px;border-radius:50%;background:radial-gradient(circle,rgba(34,211,238,.12),transparent 68%);filter:blur(2px);z-index:0}.bkr-wrap::after{content:'';position:absolute;bottom:42px;width:210px;height:24px;border-radius:50%;background:rgba(0,0,0,.34);filter:blur(10px);z-index:0}.bkr-wrap svg{position:relative;z-index:1;filter:drop-shadow(0 28px 38px rgba(0,0,0,.38)) drop-shadow(0 0 24px rgba(34,211,238,.12));transform:scale(1.06)}.lab-hints{position:relative;z-index:2}.lab-hint{box-shadow:0 12px 30px rgba(0,0,0,.16)}
+#beaker rect[stroke],#beaker path[stroke]{vector-effect:non-scaling-stroke}.foot-links a{position:relative}.foot-links a::after{content:'';position:absolute;left:0;right:100%;bottom:-4px;height:1px;background:var(--a);transition:.2s}.foot-links a:hover::after{right:0}
+.road-grid{display:grid!important;grid-template-columns:repeat(4,1fr)!important;gap:1.2rem!important;margin-top:3rem!important}.road-grid::after{left:12.5%!important;right:12.5%!important}.road-item{text-align:center;position:relative;z-index:1;background:linear-gradient(145deg,rgba(20,28,46,.74),rgba(17,24,39,.52));border:1px solid var(--bd);border-radius:18px;padding:1.2rem .95rem;transition:.25s}.road-item:hover{transform:translateY(-4px);border-color:rgba(34,211,238,.28);box-shadow:0 16px 45px rgba(34,211,238,.08)}
+@media(max-width:1100px){.logic-grid{grid-template-columns:1fr 1fr}.micro-board{display:none}.hero-sub{border-left:0;padding-left:0}.lab-stage{grid-template-columns:1fr}.bkr-wrap svg{transform:scale(1)}}
+@media(max-width:1024px){.hero::before{inset:78px 2% 24px}.hero h1{max-width:none}.road-grid{grid-template-columns:1fr 1fr!important}.road-grid::after{display:none}.logic-grid{grid-template-columns:1fr 1fr}.stats-band-inner{gap:2rem}}
+@media(max-width:700px){.logic-grid{grid-template-columns:1fr}.hero::before{display:none}.hero-sub{text-align:left}.hero-cta{justify-content:flex-start}.hero-stats{grid-template-columns:1fr}.stats-grid{grid-template-columns:1fr}.why-row{grid-template-columns:34px 1fr}.logic-sec{padding:4rem 5%}.road-grid{grid-template-columns:1fr!important}.bkr-wrap::before{width:210px;height:210px}.bkr-wrap::after{width:170px}.lab-stage{gap:1.7rem}.rxn-btn{min-height:44px}.res-panel{min-height:104px}}
+@media(prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.001ms!important;animation-iteration-count:1!important;scroll-behavior:auto!important;transition-duration:.001ms!important}}
+
+</style>
+</head>
+<body>
+
+<div class="blob blob1"></div>
+<div class="blob blob2"></div>
+<div class="blob blob3"></div>
+
+<!-- HEADER -->
+<header class="hdr" id="hdr">
+  <a class="logo" href="#">
+    <div class="logo-mark">⚗️</div>
+    <span>ChemLab TJ</span>
+  </a>
+  <nav class="nav-links">
+    <a href="#lab-anchor" data-i="nav.lab">Лаборатория</a>
+    <a href="#potential" data-i="nav.potential">Потенциал</a>
+    <a href="#features" data-i="nav.features">Возможности</a>
+    <a href="#roadmap" data-i="nav.roadmap">Развитие</a>
+  </nav>
+  <div class="hdr-right">
+    <div class="lang-switch">
+      <button id="btnRU" class="active" onclick="setLang('ru')">RU</button>
+      <button id="btnTJ" onclick="setLang('tj')">ТЈ</button>
+    </div>
+    <a class="btn btn-p" href="demo.html#lab" data-i="nav.cta">Открыть демо</a>
+    <button class="burger" id="burger" aria-label="Меню"><span></span><span></span><span></span></button>
+  </div>
+</header>
+<nav class="mob-nav" id="mobNav">
+  <a href="#lab-anchor" data-i="nav.lab">Лаборатория</a>
+  <a href="#potential" data-i="nav.potential">Потенциал</a>
+  <a href="#features" data-i="nav.features">Возможности</a>
+  <a href="#roadmap" data-i="nav.roadmap">Развитие</a>
+</nav>
+
+<main>
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-copy">
+    <div class="hero-eyebrow"><div class="dot-pulse"></div><span data-i="hero.badge">STEM-проект · Таджикистан 🇹🇯</span></div>
+    <h1><span class="grad-text" data-i="hero.h1a">Цифровая химическая</span><br><span data-i="hero.h1b">лаборатория</span></h1>
+    <p class="hero-sub" data-i="hero.sub">ChemLab TJ делает химию безопасной, понятной и наглядной — даже там, где нет оборудованной лаборатории. Опыты прямо в браузере, без установки.</p>
+    <div class="trust-row">
+      <span class="trust-chip"><b>✓</b><span data-i="trust.1">Без установки</span></span>
+      <span class="trust-chip"><b>✓</b><span data-i="trust.2">Для уроков химии</span></span>
+      <span class="trust-chip"><b>✓</b><span data-i="trust.3">RU / TJ интерфейс</span></span>
+      <span class="trust-chip"><b>✓</b><span data-i="trust.4">Безопасные демонстрации</span></span>
+    </div>
+    <div class="hero-cta">
+      <a class="btn btn-p" href="demo.html#lab" data-i="hero.cta1">⚗️ Открыть демо</a>
+      <a class="btn btn-o" href="#potential" data-i="hero.cta2">О проекте →</a>
+    </div>
+    <div class="hero-stats">
+      <div class="hstat"><strong>2,3 млн+</strong><span data-i="hero.s1">школьников</span></div>
+      <div class="hstat"><strong>130 тыс+</strong><span data-i="hero.s2">учителей</span></div>
+      <div class="hstat"><strong>1 млн+</strong><span data-i="hero.s3">целевая аудитория</span></div>
+    </div>
+  </div>
+  <div class="hero-vis">
+    <div class="vis-ring vr1"><div class="orb-dot orb1"></div><div class="orb-dot orb2"></div></div>
+    <div class="vis-ring vr2"><div class="orb-dot orb3"></div></div>
+    <div class="vis-ring vr3"></div>
+    <div class="vis-center">
+      <svg width="160" height="220" viewBox="0 0 160 220">
+        <defs>
+          <linearGradient id="fg1" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0%" stop-color="#22d3ee" stop-opacity=".5"/>
+            <stop offset="100%" stop-color="#3b82f6" stop-opacity=".2"/>
+          </linearGradient>
+          <linearGradient id="fg2" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stop-color="#22d3ee" stop-opacity=".8"/>
+            <stop offset="100%" stop-color="#1d4ed8" stop-opacity=".95"/>
+          </linearGradient>
+          <clipPath id="fc"><path d="M58,64 L32,142 Q24,192 80,208 Q136,192 128,142 L102,64Z"/></clipPath>
+        </defs>
+        <rect x="60" y="12" width="40" height="56" rx="5" fill="rgba(34,211,238,.12)" stroke="#22d3ee" stroke-width="1.2" stroke-opacity=".5"/>
+        <rect x="56" y="8" width="48" height="12" rx="4" fill="rgba(34,211,238,.18)" stroke="#22d3ee" stroke-width="1" stroke-opacity=".4"/>
+        <path d="M58,64 L32,142 Q24,192 80,208 Q136,192 128,142 L102,64Z" fill="url(#fg1)" stroke="#22d3ee" stroke-width="1.2" stroke-opacity=".6"/>
+        <path d="M35,148 Q26,190 80,205 Q134,190 125,148Z" fill="url(#fg2)" clip-path="url(#fc)"/>
+        <ellipse cx="52" cy="135" rx="5" ry="16" fill="white" fill-opacity=".06" transform="rotate(-15,52,135)"/>
+        <circle cx="65" cy="175" r="4" fill="#22d3ee" fill-opacity=".5">
+          <animate attributeName="cy" values="175;90;175" dur="2.2s" repeatCount="indefinite"/>
+          <animate attributeName="opacity" values=".5;0;.5" dur="2.2s" repeatCount="indefinite"/>
+        </circle>
+        <circle cx="85" cy="185" r="3" fill="#22d3ee" fill-opacity=".4">
+          <animate attributeName="cy" values="185;80;185" dur="2.8s" begin=".7s" repeatCount="indefinite"/>
+          <animate attributeName="opacity" values=".4;0;.4" dur="2.8s" begin=".7s" repeatCount="indefinite"/>
+        </circle>
+        <circle cx="100" cy="170" r="3.5" fill="#22d3ee" fill-opacity=".5">
+          <animate attributeName="cy" values="170;85;170" dur="2s" begin="1.4s" repeatCount="indefinite"/>
+          <animate attributeName="opacity" values=".5;0;.5" dur="2s" begin="1.4s" repeatCount="indefinite"/>
+        </circle>
+        <rect x="40" y="203" width="80" height="10" rx="3" fill="rgba(34,211,238,.1)" stroke="#22d3ee" stroke-opacity=".25" stroke-width="1"/>
+      </svg>
+    </div>
+    <div class="fcard"><div class="fcard-label">Реакция</div><div class="fcard-val">AgNO₃ + NaCl</div><div class="fcard-sub">AgCl↓ белый осадок</div></div>
+    <div class="fcard fcard-g"><div class="fcard-label" data-i="fc.audience">Аудитория</div><div class="fcard-val">1 млн+</div><div class="fcard-sub" data-i="fc.sub">учеников и учителей</div></div>
+    <div class="fcard"><div class="fcard-label" data-i="fc.safe">Безопасно</div><div class="fcard-val">100%</div><div class="fcard-sub" data-i="fc.browser">работает в браузере</div></div>
+
+    <div class="micro-board" aria-hidden="true">
+      <div class="micro-top"><span data-i="micro.label">Модель опыта</span><b>LIVE</b></div>
+      <div class="atom-grid">
+        <span>Ag⁺</span><span>Cl⁻</span><span>H₂↑</span><span>OH⁻</span>
+      </div>
+      <div class="signal-line"><i></i></div>
+    </div>
+  </div>
+</section>
+
+<div class="sep"></div>
+
+<!-- STATS -->
+<section class="stats-band" id="potential">
+  <div class="stats-band-inner">
+    <div class="rv">
+      <p class="sec-label" data-i="stats.label">Образование · Таджикистан</p>
+      <h2 class="sec-title" data-i="stats.title">Реальный рынок, понятная аудитория</h2>
+      <p class="sec-lead" data-i="stats.lead">ChemLab TJ создаётся для страны с быстро растущей системой образования. Более 2,3 млн школьников и 130 тыс. учителей — реальная аудитория, которой нужен цифровой инструмент.</p>
+      <a class="btn btn-o" href="#lab-anchor" style="margin-top:1.4rem" data-i="stats.cta">Попробовать демо →</a>
+    </div>
+    <div class="stats-grid rv">
+      <div class="scard hl"><strong>1 млн+</strong><span data-i="sc.audience">совокупная образовательная аудитория ChemLab TJ</span></div>
+      <div class="scard"><strong>10,72 млн</strong><span data-i="sc.pop">население на 01.01.2026</span></div>
+      <div class="scard"><strong>4 037</strong><span data-i="sc.schools">общеобразовательных учреждений</span></div>
+      <div class="scard"><strong>2 357 056</strong><span data-i="sc.pupils">учеников в школах</span></div>
+      <div class="scard"><strong>130 732</strong><span data-i="sc.teachers">учителей</span></div>
+      <div class="scard"><strong>46</strong><span data-i="sc.unis">высших учебных заведений</span></div>
+      <div class="scard"><strong>≈218 000</strong><span data-i="sc.students">студентов вузов</span></div>
+    </div>
+  </div>
+</section>
+
+
+<!-- WHY IMPORTANT -->
+<section class="why-sec" id="why">
+  <div class="rv">
+    <p class="sec-label" data-i="why.label">Почему это важно</p>
+    <h2 class="sec-title" data-i="why.title">Цифровая симуляция помогает там, где обычный опыт провести сложно</h2>
+    <p class="sec-lead" data-i="why.lead">ChemLab TJ не заменяет настоящую лабораторию полностью. Его задача — безопасно показать принцип реакции, наблюдение и уравнение до практической работы или вместо неё, если оборудования нет.</p>
+  </div>
+  <div class="why-grid">
+    <div class="why-card why-main rv">
+      <h3 data-i="why.main.t">Проблема урока химии</h3>
+      <p data-i="why.main.p">Реактивы стоят денег, требуют хранения и контроля безопасности. Из-за этого часть опытов остаётся только в учебнике, хотя именно наблюдение осадка, газа и цвета помогает ученику понять химию.</p>
+    </div>
+    <div class="why-list rv">
+      <div class="why-row"><div class="why-ico">🧪</div><div><strong data-i="why.r1.t">Безопасная демонстрация</strong><span data-i="why.r1.p">Можно показать реакцию без риска, запахов, ожогов и порчи реактивов.</span></div></div>
+      <div class="why-row"><div class="why-ico">📚</div><div><strong data-i="why.r2.t">Повторение дома</strong><span data-i="why.r2.p">Ученик может снова пройти опыт и связать наблюдение с уравнением.</span></div></div>
+      <div class="why-row"><div class="why-ico">🏫</div><div><strong data-i="why.r3.t">Полезно школам без кабинета</strong><span data-i="why.r3.p">Даёт наглядность даже при ограниченном оборудовании.</span></div></div>
+    </div>
+  </div>
+</section>
+
+<!-- FEATURES -->
+<section class="sec" id="features">
+  <div class="rv">
+    <p class="sec-label" data-i="feat.label">Для кого</p>
+    <h2 class="sec-title" data-i="feat.title">Платформа для урока, подготовки и демонстрации</h2>
+    <p class="sec-lead" data-i="feat.lead">Один инструмент — для разных задач: учитель объясняет, ученик исследует, школа без лаборатории показывает реакции.</p>
+  </div>
+  <div class="feat-grid">
+    <div class="feat rv"><span class="feat-ico">🎓</span><h3 data-i="f1.t">Школьники 7–11 классов</h3><p data-i="f1.p">Понимают свойства веществ через визуальные опыты, карточки элементов и повторяемые сценарии без риска.</p></div>
+    <div class="feat rv" style="transition-delay:.07s"><span class="feat-ico">👩‍🏫</span><h3 data-i="f2.t">Учителя химии</h3><p data-i="f2.p">Инструмент для объяснения сложных процессов на экране — без подготовки кабинета и дорогих реактивов.</p></div>
+    <div class="feat rv" style="transition-delay:.14s"><span class="feat-ico">🏫</span><h3 data-i="f3.t">Школы без лаборатории</h3><p data-i="f3.p">Показывают базовые реакции и правила безопасности даже при ограниченном оборудовании.</p></div>
+    <div class="feat rv" style="transition-delay:.21s"><span class="feat-ico">🔬</span><h3 data-i="f4.t">Колледжи и вузы</h3><p data-i="f4.p">Используют симуляции как вводный слой перед практикой и для повторения после лабораторных работ.</p></div>
+    <div class="feat rv" style="transition-delay:.28s"><span class="feat-ico">🏆</span><h3 data-i="f5.t">Олимпиадники и экзамены</h3><p data-i="f5.p">Тренируют наблюдения, уравнения реакций и логику вывода в чистом понятном интерфейсе.</p></div>
+    <div class="feat rv" style="transition-delay:.35s;border-color:rgba(34,211,238,.2)"><span class="feat-ico">🌐</span><h3 data-i="f6.t">Русский и таджикский</h3><p data-i="f6.p">Интерфейс доступен на обоих языках. Переключается мгновенно без перезагрузки страницы.</p></div>
+  </div>
+</section>
+
+
+<!-- DEMO CAPABILITIES -->
+<section class="demo-sec">
+  <div class="demo-inner">
+    <div class="rv">
+      <p class="sec-label" data-i="demo.label">Что уже умеет демо</p>
+      <h2 class="sec-title" data-i="demo.title">Мини-лаборатория показывает не только формулу, но и наблюдение</h2>
+      <p class="sec-lead" data-i="demo.lead">Сценарий построен так, чтобы ученик видел ход опыта: выбор реагентов, запуск, визуальный эффект, уравнение и краткий вывод.</p>
+    </div>
+    <div class="demo-strip rv">
+      <div class="demo-step"><em>01</em><strong data-i="demo.s1.t">Выбор реакции</strong><span data-i="demo.s1.p">Список базовых школьных реакций.</span></div>
+      <div class="demo-step"><em>02</em><strong data-i="demo.s2.t">Запуск опыта</strong><span data-i="demo.s2.p">Плавная анимация в лабораторной колбе.</span></div>
+      <div class="demo-step"><em>03</em><strong data-i="demo.s3.t">Осадок</strong><span data-i="demo.s3.p">Белый, синий или бурый осадок.</span></div>
+      <div class="demo-step"><em>04</em><strong data-i="demo.s4.t">Газ</strong><span data-i="demo.s4.p">Пузырьки при выделении H₂.</span></div>
+      <div class="demo-step"><em>05</em><strong data-i="demo.s5.t">Уравнение</strong><span data-i="demo.s5.p">Итоговая формула реакции.</span></div>
+      <div class="demo-step"><em>06</em><strong data-i="demo.s6.t">RU/TJ</strong><span data-i="demo.s6.p">Переключение языка без перезагрузки.</span></div>
+    </div>
+  </div>
+</section>
+
+
+<!-- SCIENCE LOGIC -->
+<section class="logic-sec" id="science-logic">
+  <div class="logic-inner">
+    <div class="rv">
+      <p class="sec-label" data-i="logic.label">Научная логика</p>
+      <h2 class="sec-title" data-i="logic.title">Симуляция должна объяснять причину, а не только показывать эффект</h2>
+      <p class="sec-lead" data-i="logic.lead">Следующий уровень ChemLab TJ — проверка совместимости реагентов, тип реакции, визуальный признак и краткое объяснение для ученика.</p>
+    </div>
+    <div class="logic-grid rv">
+      <div class="logic-card"><div class="logic-icon">↓</div><h3 data-i="logic.c1.t">Осадок</h3><p data-i="logic.c1.p">Если ионы образуют малорастворимое соединение, появляется слой осадка внизу колбы.</p></div>
+      <div class="logic-card"><div class="logic-icon">↑</div><h3 data-i="logic.c2.t">Газ</h3><p data-i="logic.c2.p">Для реакций с выделением газа симуляция показывает пузырьки и предупреждение о безопасности.</p></div>
+      <div class="logic-card"><div class="logic-icon">≈</div><h3 data-i="logic.c3.t">Нейтрализация</h3><p data-i="logic.c3.p">Кислота и щёлочь дают соль и воду: осадка нет, но можно показать тепло и прозрачный раствор.</p></div>
+      <div class="logic-card"><div class="logic-icon">●</div><h3 data-i="logic.c4.t">Цвет</h3><p data-i="logic.c4.p">Цвет раствора и осадка помогает ученику связать наблюдение с веществом и уравнением.</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- LAB -->
+<div class="lab-wrap" id="lab-anchor">
+<div class="lab-inner">
+  <div class="rv">
+    <p class="sec-label" data-i="lab.label">Цифровая лаборатория</p>
+    <h2 class="sec-title" data-i="lab.title">Проведите реакцию прямо здесь</h2>
+    <p class="sec-lead" data-i="lab.lead">Выберите реагенты и запустите реакцию — увидите результат, уравнение и наблюдение, как на реальном уроке химии.</p>
+  </div>
+  <div class="lab-stage rv">
+    <div>
+      <p style="font-size:.7rem;color:var(--t3);text-transform:uppercase;letter-spacing:.1em;margin-bottom:.8rem" data-i="lab.pick">Выберите реакцию</p>
+      <div class="rxn-grid" id="rxnGrid">
+        <button class="rxn-btn active" onclick="pickRxn('agno3',this)">AgNO₃ + NaCl</button>
+        <button class="rxn-btn" onclick="pickRxn('hcl',this)">HCl + NaOH</button>
+        <button class="rxn-btn" onclick="pickRxn('cuso4',this)">CuSO₄ + NaOH</button>
+        <button class="rxn-btn" onclick="pickRxn('bacl2',this)">BaCl₂ + H₂SO₄</button>
+        <button class="rxn-btn" onclick="pickRxn('zn',this)">Zn + H₂SO₄</button>
+        <button class="rxn-btn" onclick="pickRxn('fecl3',this)">FeCl₃ + NaOH</button>
+      </div>
+      <button class="run-btn" id="runBtn" onclick="runRxn()" data-i="lab.run">⚡ Запустить реакцию</button>
+      <div class="res-panel" id="resPanel">
+        <div class="res-lbl" data-i="lab.waiting">Ожидание</div>
+        <div style="color:var(--t3);font-size:.83rem" data-i="lab.hint">Выберите реакцию и нажмите кнопку</div>
+      </div>
+    </div>
+    <div class="bkr-wrap">
+      <svg id="beaker" width="200" height="290" viewBox="0 0 200 290" overflow="visible">
+        <defs>
+          <linearGradient id="bLiq" x1="0" y1="0" x2="0" y2="1">
+            <stop id="bTop" offset="0%" stop-color="#22d3ee" stop-opacity=".75"/>
+            <stop id="bBot" offset="100%" stop-color="#1d4ed8" stop-opacity=".95"/>
+          </linearGradient>
+          <clipPath id="bClip"><rect x="20" y="55" width="160" height="205"/></clipPath>
+        </defs>
+        <!-- body -->
+        <rect x="15" y="30" width="170" height="14" rx="5" fill="rgba(34,211,238,.12)" stroke="#22d3ee" stroke-width="1.2" stroke-opacity=".45"/>
+        <rect x="20" y="44" width="160" height="200" rx="4" fill="rgba(34,211,238,.05)" stroke="#22d3ee" stroke-width="1.3" stroke-opacity=".4"/>
+        <rect x="12" y="242" width="176" height="14" rx="4" fill="rgba(34,211,238,.1)" stroke="#22d3ee" stroke-opacity=".3" stroke-width="1"/>
+        <!-- spout -->
+        <path d="M168,44 L188,26 L188,44" fill="rgba(34,211,238,.08)" stroke="#22d3ee" stroke-width="1.1" stroke-opacity=".4"/>
+        <!-- measure lines -->
+        <line x1="26" y1="80"  x2="40" y2="80"  stroke="#22d3ee" stroke-opacity=".25" stroke-width="1"/>
+        <line x1="26" y1="120" x2="40" y2="120" stroke="#22d3ee" stroke-opacity=".25" stroke-width="1"/>
+        <line x1="26" y1="160" x2="40" y2="160" stroke="#22d3ee" stroke-opacity=".25" stroke-width="1"/>
+        <line x1="26" y1="200" x2="40" y2="200" stroke="#22d3ee" stroke-opacity=".25" stroke-width="1"/>
+        <text x="43" y="83"  fill="#22d3ee" fill-opacity=".3" font-size="9">75</text>
+        <text x="43" y="123" fill="#22d3ee" fill-opacity=".3" font-size="9">50</text>
+        <text x="43" y="163" fill="#22d3ee" fill-opacity=".3" font-size="9">25</text>
+        <!-- liquid -->
+        <rect id="bLiqRect" x="20" y="100" width="160" height="144" fill="url(#bLiq)" clip-path="url(#bClip)" opacity="0" style="transition:opacity .7s,y .9s"/>
+        <!-- precip -->
+        <rect id="bPrecip" x="20" y="243" width="160" height="0" clip-path="url(#bClip)" fill="rgba(255,255,255,.9)" style="transition:height 1.4s ease-out,y 1.4s ease-out,fill .3s"/>
+        <!-- foam -->
+        <ellipse id="bFoam" cx="100" cy="105" rx="0" ry="0" fill="rgba(255,255,255,.25)" style="transition:all 1s ease-out"/>
+        <!-- shine -->
+        <ellipse cx="36" cy="155" rx="5" ry="22" fill="white" fill-opacity=".05" transform="rotate(-12,36,155)"/>
+        <!-- bubbles -->
+        <g id="bBubs" opacity="0" style="transition:opacity .4s">
+          <circle cx="70"  cy="220" r="5" fill="#22d3ee" fill-opacity=".5"><animate attributeName="cy" values="220;60;220" dur="2.1s" repeatCount="indefinite"/><animate attributeName="opacity" values=".5;0;.5" dur="2.1s" repeatCount="indefinite"/></circle>
+          <circle cx="100" cy="230" r="3.5" fill="#22d3ee" fill-opacity=".4"><animate attributeName="cy" values="230;55;230" dur="2.6s" begin=".5s" repeatCount="indefinite"/><animate attributeName="opacity" values=".4;0;.4" dur="2.6s" begin=".5s" repeatCount="indefinite"/></circle>
+          <circle cx="135" cy="215" r="4" fill="#22d3ee" fill-opacity=".5"><animate attributeName="cy" values="215;65;215" dur="1.9s" begin="1.1s" repeatCount="indefinite"/><animate attributeName="opacity" values=".5;0;.5" dur="1.9s" begin="1.1s" repeatCount="indefinite"/></circle>
+        </g>
+        <!-- gas bubbles (for Zn+H2SO4) -->
+        <g id="bGas" opacity="0" style="transition:opacity .4s">
+          <circle cx="60"  cy="100" r="6" fill="none" stroke="#10b981" stroke-width="1.5" stroke-opacity=".7"><animate attributeName="cy" values="100;20;100" dur="1.5s" repeatCount="indefinite"/><animate attributeName="r" values="6;12;6" dur="1.5s" repeatCount="indefinite"/><animate attributeName="opacity" values=".7;0;.7" dur="1.5s" repeatCount="indefinite"/></circle>
+          <circle cx="100" cy="105" r="4" fill="none" stroke="#10b981" stroke-width="1.5" stroke-opacity=".6"><animate attributeName="cy" values="105;15;105" dur="1.8s" begin=".4s" repeatCount="indefinite"/><animate attributeName="r" values="4;9;4" dur="1.8s" begin=".4s" repeatCount="indefinite"/><animate attributeName="opacity" values=".6;0;.6" dur="1.8s" begin=".4s" repeatCount="indefinite"/></circle>
+          <circle cx="140" cy="95"  r="5" fill="none" stroke="#10b981" stroke-width="1.5" stroke-opacity=".7"><animate attributeName="cy" values="95;10;95" dur="2s" begin=".9s" repeatCount="indefinite"/><animate attributeName="r" values="5;10;5" dur="2s" begin=".9s" repeatCount="indefinite"/><animate attributeName="opacity" values=".7;0;.7" dur="2s" begin=".9s" repeatCount="indefinite"/></circle>
+        </g>
+        <!-- done label -->
+        <text id="bLabel" x="100" y="275" text-anchor="middle" fill="#22d3ee" fill-opacity="0" font-size="10" style="transition:fill-opacity .8s;font-family:sans-serif">Реакция завершена ✓</text>
+      </svg>
+      <div class="lab-hints" aria-hidden="true">
+        <span class="lab-hint" data-i="lab.h1">визуализация осадка</span>
+        <span class="lab-hint" data-i="lab.h2">пузырьки газа</span>
+        <span class="lab-hint" data-i="lab.h3">изменение цвета</span>
+      </div>
+    </div>
+  </div>
+</div>
+</div>
+
+<!-- ROADMAP -->
+<section class="sec" id="roadmap">
+  <div style="text-align:center" class="rv">
+    <p class="sec-label" data-i="road.label">Стратегия развития</p>
+    <h2 class="sec-title" data-i="road.title">Из демо — в STEM-платформу</h2>
+    <p class="sec-lead" style="margin:0 auto" data-i="road.lead">Химия сегодня — биология, физика и межпредметные лаборатории завтра. Поэтапное масштабирование.</p>
+  </div>
+  <div class="road-grid">
+    <div class="road-item rv"><div class="road-num">01</div><h3 data-i="r1.t">Библиотека реакций</h3><p data-i="r1.p">Расширение базы опытов: осадки, газы, нейтрализация, индикаторы и правила безопасности.</p></div>
+    <div class="road-item rv" style="transition-delay:.1s"><div class="road-num">02</div><h3 data-i="r2.t">Кабинет учителя и ученика</h3><p data-i="r2.p">Роли, задания, сохранённые попытки и сценарии для уроков по темам.</p></div>
+    <div class="road-item rv" style="transition-delay:.2s"><div class="road-num">03</div><h3 data-i="r3.t">Прогресс и задания</h3><p data-i="r3.p">Проверка понимания: наблюдение, уравнение, вывод и динамика по ученику.</p></div>
+    <div class="road-item rv" style="transition-delay:.3s"><div class="road-num">04</div><h3 data-i="r4.t">STEM-масштабирование</h3><p data-i="r4.p">Добавление физических и биологических симуляций на единой образовательной платформе.</p></div>
+  </div>
+</section>
+</main>
+
+<footer>
+  <div class="foot-brand">
+    <div class="logo-mark" style="width:30px;height:30px;font-size:15px;border-radius:8px">⚗️</div>
+    <div><strong>ChemLab TJ</strong><span data-i="foot.sub">Demo concept · цифровая STEM-платформа · 2026</span></div>
+  </div>
+  <div class="foot-links">
+    <a href="#lab-anchor" data-i="nav.lab">Лаборатория</a>
+    <a href="#potential" data-i="nav.potential">Потенциал</a>
+    <a href="#features" data-i="nav.features">Возможности</a>
+    <a href="#roadmap" data-i="nav.roadmap">Развитие</a>
+  </div>
+  <a class="btn btn-o" href="#" style="padding:.4rem .9rem;font-size:.78rem" data-i="foot.top">↑ Наверх</a>
+</footer>
+
+<script>
+/* ════════════════════════════════
+   TRANSLATIONS
+════════════════════════════════ */
+const T = {
+  ru: {
+    'nav.lab':'Лаборатория','nav.potential':'Потенциал','nav.features':'Возможности',
+    'nav.roadmap':'Развитие','nav.cta':'Открыть демо',
+    'hero.badge':'STEM-проект · Таджикистан 🇹🇯',
+    'hero.h1a':'Цифровая химическая','hero.h1b':'лаборатория',
+    'hero.sub':'ChemLab TJ — цифровая химическая лаборатория для школ Таджикистана: безопасные опыты, понятные наблюдения и уравнения прямо в браузере, без установки и сложной подготовки.',
+    'hero.cta1':'⚗️ Открыть демо','hero.cta2':'О проекте →',
+    'hero.s1':'школьников','hero.s2':'учителей','hero.s3':'целевая аудитория',
+    'fc.audience':'Аудитория','fc.sub':'учеников и учителей','fc.safe':'Безопасно','fc.browser':'работает в браузере',
+    'micro.label':'Модель опыта',
+    'trust.1':'Без установки','trust.2':'Для уроков химии','trust.3':'RU / TJ интерфейс','trust.4':'Безопасные демонстрации',
+    'stats.label':'Образование · Таджикистан',
+    'stats.title':'Реальный рынок, понятная аудитория',
+    'stats.lead':'ChemLab TJ ориентирован на образовательную среду Таджикистана. Эти цифры показывают потенциальную аудиторию, а не гарантированное число пользователей: школы, учителя, ученики и вузы, которым может быть полезна цифровая лаборатория.',
+    'stats.cta':'Попробовать демо →',
+    'sc.audience':'совокупная образовательная аудитория ChemLab TJ',
+    'sc.pop':'население на 01.01.2026','sc.schools':'общеобразовательных учреждений',
+    'sc.pupils':'учеников в школах','sc.teachers':'учителей',
+    'sc.unis':'высших учебных заведений','sc.students':'студентов вузов',
+    'feat.label':'Для кого','feat.title':'Платформа для урока, подготовки и демонстрации',
+    'feat.lead':'Один инструмент — для разных задач: учитель объясняет, ученик исследует, школа без лаборатории показывает реакции, а класс тренирует выводы по наблюдениям.',
+    'f1.t':'Школьники 7–11 классов','f1.p':'Видят свойства веществ через визуальные опыты: осадок, газ, цвет раствора и итоговое уравнение без риска.',
+    'f2.t':'Учителя химии','f2.p':'Быстро показывают процесс на экране: что смешали, что изменилось, какое уравнение получилось и какой вывод сделать.',
+    'f3.t':'Школы без лаборатории','f3.p':'Получают наглядный инструмент для базовых реакций и правил безопасности даже при ограниченном оборудовании.',
+    'f4.t':'Колледжи и вузы','f4.p':'Используют симуляции как вводный слой перед практикой и для повторения после лабораторных работ.',
+    'f5.t':'Олимпиадники и экзамены','f5.p':'Тренируют наблюдения, уравнения реакций и логику вывода в чистом понятном интерфейсе.',
+    'f6.t':'Русский и таджикский','f6.p':'Интерфейс доступен на обоих языках. Переключается мгновенно без перезагрузки страницы.',
+    'lab.label':'Цифровая лаборатория','lab.title':'Проведите реакцию прямо здесь',
+    'lab.lead':'Выберите реагенты и запустите реакцию — увидите результат, уравнение и наблюдение, как на реальном уроке химии.',
+    'lab.pick':'Выберите реакцию','lab.run':'⚡ Запустить реакцию',
+    'lab.waiting':'Ожидание','lab.hint':'Выберите реакцию и нажмите кнопку',
+    'why.label':'Почему это важно','why.title':'Цифровая симуляция помогает там, где обычный опыт провести сложно','why.lead':'ChemLab TJ не заменяет настоящую лабораторию полностью. Его задача — безопасно показать принцип реакции, наблюдение и уравнение до практической работы или вместо неё, если оборудования нет.','why.main.t':'Проблема урока химии','why.main.p':'Реактивы стоят денег, требуют хранения и контроля безопасности. Из-за этого часть опытов остаётся только в учебнике, хотя именно наблюдение осадка, газа и цвета помогает ученику понять химию.','why.r1.t':'Безопасная демонстрация','why.r1.p':'Можно показать реакцию без риска, запахов, ожогов и порчи реактивов.','why.r2.t':'Повторение дома','why.r2.p':'Ученик может снова пройти опыт и связать наблюдение с уравнением.','why.r3.t':'Полезно школам без кабинета','why.r3.p':'Даёт наглядность даже при ограниченном оборудовании.',
+    'demo.label':'Что уже умеет демо','demo.title':'Мини-лаборатория показывает не только формулу, но и наблюдение','demo.lead':'Сценарий построен так, чтобы ученик видел ход опыта: выбор реагентов, запуск, визуальный эффект, уравнение и краткий вывод.','demo.s1.t':'Выбор реакции','demo.s1.p':'Список базовых школьных реакций.','demo.s2.t':'Запуск опыта','demo.s2.p':'Плавная анимация в лабораторной колбе.','demo.s3.t':'Осадок','demo.s3.p':'Белый, синий или бурый осадок.','demo.s4.t':'Газ','demo.s4.p':'Пузырьки при выделении H₂.','demo.s5.t':'Уравнение','demo.s5.p':'Итоговая формула реакции.','demo.s6.t':'RU/TJ','demo.s6.p':'Переключение языка без перезагрузки.','lab.h1':'визуализация осадка','lab.h2':'пузырьки газа','lab.h3':'изменение цвета',
+    'logic.label':'Научная логика','logic.title':'Симуляция должна объяснять причину, а не только показывать эффект','logic.lead':'Следующий уровень ChemLab TJ — проверка совместимости реагентов, тип реакции, визуальный признак и краткое объяснение для ученика.','logic.c1.t':'Осадок','logic.c1.p':'Если ионы образуют малорастворимое соединение, появляется слой осадка внизу колбы.','logic.c2.t':'Газ','logic.c2.p':'Для реакций с выделением газа симуляция показывает пузырьки и предупреждение о безопасности.','logic.c3.t':'Нейтрализация','logic.c3.p':'Кислота и щёлочь дают соль и воду: осадка нет, но можно показать тепло и прозрачный раствор.','logic.c4.t':'Цвет','logic.c4.p':'Цвет раствора и осадка помогает ученику связать наблюдение с веществом и уравнением.',
+    'road.label':'Стратегия развития','road.title':'Из демо — в STEM-платформу',
+    'road.lead':'Химия сегодня — биология, физика и межпредметные лаборатории завтра. Поэтапное масштабирование.',
+    'r1.t':'Роли и классы','r1.p':'Ученик, учитель и администратор с разными сценариями работы и уровнями доступа.',
+    'r2.t':'Аналитика прогресса','r2.p':'Результаты опытов, задания и динамика понимания тем для учителя и ученика.',
+    'r3.t':'Прогресс и задания','r3.p':'Проверка понимания: наблюдение, уравнение, вывод и динамика по ученику.','r4.t':'STEM-масштабирование','r4.p':'Добавление физических и биологических симуляций на единой образовательной платформе.',
+    'foot.sub':'Demo concept · цифровая STEM-платформа · 2026','foot.top':'↑ Наверх',
+  },
+  tj: {
+    'nav.lab':'Озмоишгоҳ','nav.potential':'Имконият','nav.features':'Хусусиятҳо',
+    'nav.roadmap':'Рушд','nav.cta':'Кушодани озмоишгоҳ',
+    'hero.badge':'Лоиҳаи STEM · Тоҷикистон 🇹🇯',
+    'hero.h1a':'Озмоишгоҳи рақамии','hero.h1b':'химиявӣ',
+    'hero.sub':'ChemLab TJ — озмоишгоҳи рақамии химиявӣ барои мактабҳои Тоҷикистон: таҷрибаҳои бехатар, мушоҳидаҳои фаҳмо ва муодилаҳо бевосита дар браузер, бе насб.',
+    'hero.cta1':'⚗️ Кушодани озмоишгоҳ','hero.cta2':'Дар бораи лоиҳа →',
+    'hero.s1':'хонандагон','hero.s2':'муаллимон','hero.s3':'аудиторияи ҳадаф',
+    'fc.audience':'Аудитория','fc.sub':'хонандагон ва муаллимон','fc.safe':'Бехатар','fc.browser':'дар браузер кор мекунад',
+    'micro.label':'Модели таҷриба',
+    'trust.1':'Бе насб','trust.2':'Барои дарси химия','trust.3':'Интерфейси RU / TJ','trust.4':'Намоиши бехатар',
+    'stats.label':'Маориф · Тоҷикистон',
+    'stats.title':'Бозори воқеӣ, аудиторияи фаҳмо',
+    'stats.lead':'ChemLab TJ ба муҳити таълимии Тоҷикистон равона шудааст. Ин рақамҳо аудиторияи эҳтимолиро нишон медиҳанд, на шумораи кафолатноки истифодабарандагон: мактабҳо, омӯзгорон, хонандагон ва донишгоҳҳо.',
+    'stats.cta':'Озмоишгоҳро санҷед →',
+    'sc.audience':'аудиторияи умумии таълимии ChemLab TJ',
+    'sc.pop':'аҳолӣ аз 01.01.2026','sc.schools':'муассисаҳои таълимии умумӣ',
+    'sc.pupils':'хонандагони мактабҳо','sc.teachers':'муаллимон',
+    'sc.unis':'муассисаҳои таълими олӣ','sc.students':'донишҷӯён',
+    'feat.label':'Барои кӣ','feat.title':'Платформа барои дарс, омодагӣ ва намоиш',
+    'feat.lead':'Як асбоб — барои вазифаҳои гуногун: омӯзгор шарҳ медиҳад, хонанда меомӯзад, мактаб бе озмоишгоҳ реаксияҳоро нишон медиҳад ва синф хулоса мебарорад.',
+    'f1.t':'Хонандагони синфҳои 7–11','f1.p':'Хосиятҳои моддаҳоро тавассути таҷрибаҳои визуалӣ мебинанд: таҳшин, газ, ранги маҳлул ва муодилаи ниҳоӣ.',
+    'f2.t':'Муаллимони химия','f2.p':'Равандро зуд дар экран нишон медиҳанд: чӣ омехта шуд, чӣ тағйир ёфт, кадом муодила ҳосил шуд ва чӣ хулоса бояд кард.',
+    'f3.t':'Мактабҳо бе озмоишгоҳ','f3.p':'Барои реаксияҳои асосӣ ва қоидаҳои бехатарӣ воситаи намоён мегиранд, ҳатто агар таҷҳизот маҳдуд бошад.',
+    'f4.t':'Коллеҷҳо ва донишгоҳҳо','f4.p':'Симулятсияҳоро ҳамчун қабати ибтидоӣ пеш аз амалия ва барои такрор пас аз кор дар озмоишгоҳ истифода мебаранд.',
+    'f5.t':'Олимпиадачиён ва имтиҳонҳо','f5.p':'Мушоҳидаҳо, муодилаҳои реаксия ва мантиқи хулосаро дар интерфейси равшан тамрин мекунанд.',
+    'f6.t':'Русӣ ва тоҷикӣ','f6.p':'Интерфейс бо ҳарду забон дастрас аст. Бидуни бозсозии саҳифа фавран иваз мешавад.',
+    'lab.label':'Озмоишгоҳи рақамӣ','lab.title':'Реаксияро ҳозир ин ҷо гузаронед',
+    'lab.lead':'Реагентҳоро интихоб кунед ва реаксияро оғоз кунед — натиҷа, муодила ва мушоҳидаро мебинед, монанди дарси воқеии химия.',
+    'lab.pick':'Реаксияро интихоб кунед','lab.run':'⚡ Оғози реаксия',
+    'lab.waiting':'Интизорӣ','lab.hint':'Реаксияро интихоб карда, тугмаро пахш кунед',
+    'why.label':'Чаро муҳим аст','why.title':'Симулятсияи рақамӣ ёрӣ медиҳад, вақте таҷрибаи оддӣ душвор аст','why.lead':'ChemLab TJ озмоишгоҳи ҳақиқиро пурра иваз намекунад. Вазифааш — бехатар нишон додани принсипи реаксия, мушоҳида ва муодила пеш аз амалия ё ҳангоми набудани таҷҳизот.','why.main.t':'Мушкили дарси химия','why.main.p':'Реактивҳо хароҷот, нигоҳдорӣ ва назорати бехатарӣ талаб мекунанд. Аз ин сабаб баъзе таҷрибаҳо танҳо дар китоб мемонанд, ҳол он ки мушоҳидаи таҳшин, газ ва ранг барои фаҳмиш муҳим аст.','why.r1.t':'Намоиши бехатар','why.r1.p':'Реаксияро бе хавф, бӯй, сӯхтан ва талафи реактивҳо нишон додан мумкин аст.','why.r2.t':'Такрор дар хона','why.r2.p':'Хонанда метавонад таҷрибаро дубора гузарад ва мушоҳидаро бо муодила пайваст кунад.','why.r3.t':'Барои мактабҳои бе кабинет муфид','why.r3.p':'Ҳатто бо таҷҳизоти маҳдуд нагляднокӣ медиҳад.',
+    'demo.label':'Демо аллакай чӣ кор мекунад','demo.title':'Мини-озмоишгоҳ танҳо формуларо не, балки мушоҳидаро ҳам нишон медиҳад','demo.lead':'Сенария тавре сохта шудааст, ки хонанда раванди таҷрибаро бинад: интихоб, оғоз, эффект, муодила ва хулосаи кӯтоҳ.','demo.s1.t':'Интихоби реаксия','demo.s1.p':'Рӯйхати реаксияҳои асосии мактабӣ.','demo.s2.t':'Оғози таҷриба','demo.s2.p':'Аниматсияи нарм дар колбаи лабораторӣ.','demo.s3.t':'Таҳшин','demo.s3.p':'Таҳшини сафед, кабуд ё қаҳвагӣ.','demo.s4.t':'Газ','demo.s4.p':'Ҳубобҳо ҳангоми ҷудошавии H₂.','demo.s5.t':'Муодила','demo.s5.p':'Формулаи ниҳоии реаксия.','demo.s6.t':'RU/TJ','demo.s6.p':'Ивазкунии забон бе бозсозии саҳифа.','lab.h1':'намоиши таҳшин','lab.h2':'ҳубобҳои газ','lab.h3':'тағйири ранг',
+    'logic.label':'Мантиқи илмӣ','logic.title':'Симулятсия бояд сабабро шарҳ диҳад, на танҳо эффектро нишон диҳад','logic.lead':'Қадами навбатии ChemLab TJ — санҷиши мувофиқати реагентҳо, навъи реаксия, нишонаи визуалӣ ва шарҳи кӯтоҳ барои хонанда.','logic.c1.t':'Таҳшин','logic.c1.p':'Агар ионҳо пайвасти камҳалшаванда созанд, дар поёни колба қабати таҳшин пайдо мешавад.','logic.c2.t':'Газ','logic.c2.p':'Барои реаксияҳои газҷудокунанда симулятсия ҳубобҳо ва огоҳии бехатариро нишон медиҳад.','logic.c3.t':'Нейтрализатсия','logic.c3.p':'Кислота ва ишқор намак ва об медиҳанд: таҳшин нест, аммо гармӣ ва маҳлули шаффоф нишон дода мешавад.','logic.c4.t':'Ранг','logic.c4.p':'Ранги маҳлул ва таҳшин ба хонанда кӯмак мекунад, ки мушоҳидаро бо модда ва муодила пайваст кунад.',
+    'road.label':'Стратегияи рушд','road.title':'Аз демо то платформаи STEM',
+    'road.lead':'Имрӯз химия — пагоҳ биология, физика ва озмоишгоҳҳои байнифаннӣ. Масштабгузории марҳилавӣ.',
+    'r1.t':'Нақшҳо ва синфҳо','r1.p':'Хонанда, муаллим ва маъмур бо сенарияҳои гуногуни кор ва сатҳҳои дастрасӣ.',
+    'r2.t':'Таҳлили пешрафт','r2.p':'Натиҷаҳои таҷрибаҳо, супоришҳо ва динамикаи фаҳмиши мавзӯъҳо барои муаллим ва хонанда.',
+    'r3.t':'Пешрафт ва супоришҳо','r3.p':'Санҷиши фаҳмиш: мушоҳида, муодила, хулоса ва динамикаи хонанда.','r4.t':'Масштабгузории STEM','r4.p':'Иловаи симулятсияҳои физика ва биология дар як платформаи таълимӣ.',
+    'foot.sub':'Demo concept · платформаи рақамии STEM · 2026','foot.top':'↑ Боло',
+  }
+};
+
+let lang = 'ru';
+function setLang(l){
+  lang = l;
+  document.getElementById('btnRU').classList.toggle('active', l==='ru');
+  document.getElementById('btnTJ').classList.toggle('active', l==='tj');
+  document.documentElement.lang = l==='tj'?'tg':'ru';
+  document.querySelectorAll('[data-i]').forEach(el=>{
+    const key = el.getAttribute('data-i');
+    if(T[l][key] !== undefined) el.textContent = T[l][key];
+  });
+  // update reaction result panel if shown
+  if(document.getElementById('resPanel').classList.contains('show')) updateResult();
+  // update beaker label
+  const lbl = document.getElementById('bLabel');
+  lbl.textContent = l==='ru'?'Реакция завершена ✓':'Реаксия анҷом ёфт ✓';
+}
+
+/* ════════════════════════════════
+   REACTIONS
+════════════════════════════════ */
+const RXN = {
+  agno3:{
+    top:'#22d3ee',bot:'#0369a1',precipFill:'rgba(240,240,240,.97)',precipH:20,
+    eq:{ru:'AgNO₃ + NaCl → AgCl↓ + NaNO₃',tj:'AgNO₃ + NaCl → AgCl↓ + NaNO₃'},
+    obs:{ru:'Образуется белый творожистый осадок AgCl (практически нерастворим в воде)',tj:'Осади сафеди AgCl пайдо мешавад (дар об ҳал намешавад)'},
+    obs_col:'var(--t1)',gas:false
+  },
+  hcl:{
+    top:'#fb923c',bot:'#9a3412',precipFill:'rgba(251,146,60,.15)',precipH:0,
+    eq:{ru:'HCl + NaOH → NaCl + H₂O',tj:'HCl + NaOH → NaCl + H₂O'},
+    obs:{ru:'Реакция нейтрализации. Выделяется тепло, осадка нет, раствор прозрачный',tj:'Реаксияи нейтрализатсия. Гармӣ ҷудо мешавад, таҳшин нест'},
+    obs_col:'#fb923c',gas:false
+  },
+  cuso4:{
+    top:'#60a5fa',bot:'#1e3a8a',precipFill:'rgba(59,130,246,.8)',precipH:18,
+    eq:{ru:'CuSO₄ + 2NaOH → Cu(OH)₂↓ + Na₂SO₄',tj:'CuSO₄ + 2NaOH → Cu(OH)₂↓ + Na₂SO₄'},
+    obs:{ru:'Образуется ярко-синий студенистый осадок гидроксида меди Cu(OH)₂',tj:'Таҳшини кабуди Cu(OH)₂ (гидроксиди мис) пайдо мешавад'},
+    obs_col:'#60a5fa',gas:false
+  },
+  bacl2:{
+    top:'#d1d5db',bot:'#6b7280',precipFill:'rgba(248,250,252,.97)',precipH:16,
+    eq:{ru:'BaCl₂ + H₂SO₄ → BaSO₄↓ + 2HCl',tj:'BaCl₂ + H₂SO₄ → BaSO₄↓ + 2HCl'},
+    obs:{ru:'Образуется белый мелкокристаллический осадок BaSO₄ (не растворяется в кислотах)',tj:'Таҳшини кристаллии сафеди BaSO₄ пайдо мешавад'},
+    obs_col:'var(--t1)',gas:false
+  },
+  zn:{
+    top:'#34d399',bot:'#065f46',precipFill:'rgba(16,185,129,.15)',precipH:0,
+    eq:{ru:'Zn + H₂SO₄ → ZnSO₄ + H₂↑',tj:'Zn + H₂SO₄ → ZnSO₄ + H₂↑'},
+    obs:{ru:'Интенсивно выделяются пузырьки водорода H₂ (газ горючий). Цинк растворяется.',tj:'Ҳубобҳои гидрогени H₂ (газ сӯзанда) ба шиддат ҷудо мешаванд. Руҳ ҳал мешавад.'},
+    obs_col:'#34d399',gas:true
+  },
+  fecl3:{
+    top:'#f97316',bot:'#7c2d12',precipFill:'rgba(239,68,68,.75)',precipH:20,
+    eq:{ru:'FeCl₃ + 3NaOH → Fe(OH)₃↓ + 3NaCl',tj:'FeCl₃ + 3NaOH → Fe(OH)₃↓ + 3NaCl'},
+    obs:{ru:'Образуется бурый (красно-коричневый) осадок гидроксида железа(III) Fe(OH)₃',tj:'Таҳшини қаҳвагини Fe(OH)₃ (гидроксиди оҳан(III)) пайдо мешавад'},
+    obs_col:'#f97316',gas:false
+  }
+};
+
+let curRxn = 'agno3';
+let running = false;
+
+function pickRxn(key, el){
+  curRxn = key;
+  document.querySelectorAll('.rxn-btn').forEach(b=>b.classList.remove('active'));
+  el.classList.add('active');
+  resetBeaker();
+  const p = document.getElementById('resPanel');
+  p.className = 'res-panel';
+  p.innerHTML = `<div class="res-lbl">${T[lang]['lab.waiting']||'Ожидание'}</div><div style="color:var(--t3);font-size:.83rem">${T[lang]['lab.hint']||'Выберите реакцию и нажмите кнопку'}</div>`;
+}
+
+function resetBeaker(){
+  document.getElementById('bLiqRect').setAttribute('opacity','0');
+  document.getElementById('bPrecip').setAttribute('height','0');
+  document.getElementById('bBubs').setAttribute('opacity','0');
+  document.getElementById('bGas').setAttribute('opacity','0');
+  document.getElementById('bFoam').setAttribute('rx','0');
+  document.getElementById('bFoam').setAttribute('ry','0');
+  document.getElementById('bLabel').setAttribute('fill-opacity','0');
+}
+
+function updateResult(){
+  const r = RXN[curRxn];
+  const p = document.getElementById('resPanel');
+  p.className = 'res-panel show';
+  p.innerHTML = `
+    <div class="res-lbl">${lang==='ru'?'Результат реакции':'Натиҷаи реаксия'}</div>
+    <div class="res-eq">${r.eq[lang]}</div>
+    <div class="res-obs" style="color:${r.obs_col}">${r.obs[lang]}</div>`;
+}
+
+function runRxn(){
+  if(running) return;
+  running = true;
+  const btn = document.getElementById('runBtn');
+  btn.disabled = true;
+  btn.textContent = lang==='ru'?'Реакция идёт…':'Реаксия давом дорад…';
+
+  const r = RXN[curRxn];
+  resetBeaker();
+
+  // set liquid colors
+  document.getElementById('bTop').setAttribute('stop-color', r.top);
+  document.getElementById('bBot').setAttribute('stop-color', r.bot);
+
+  const liq = document.getElementById('bLiqRect');
+  const pre = document.getElementById('bPrecip');
+  const bubs = document.getElementById('bBubs');
+  const gas = document.getElementById('bGas');
+  const foam = document.getElementById('bFoam');
+  const lbl = document.getElementById('bLabel');
+
+  setTimeout(()=>{ liq.setAttribute('opacity','1'); liq.setAttribute('y','100'); }, 50);
+  setTimeout(()=>{ bubs.setAttribute('opacity','1'); }, 200);
+  if(r.gas) setTimeout(()=>{ bubs.setAttribute('opacity','0'); gas.setAttribute('opacity','1'); }, 500);
+  setTimeout(()=>{ foam.setAttribute('cx','100'); foam.setAttribute('cy','105'); foam.setAttribute('rx','72'); foam.setAttribute('ry','14'); }, 400);
+
+  setTimeout(()=>{
+    if(!r.gas) bubs.setAttribute('opacity','0');
+    foam.setAttribute('rx','40'); foam.setAttribute('ry','6');
+    if(r.precipH > 0){
+      pre.setAttribute('fill', r.precipFill);
+      pre.setAttribute('y', String(244 - r.precipH));
+      pre.setAttribute('height', String(r.precipH));
+    }
+  }, 1600);
+
+  setTimeout(()=>{
+    lbl.setAttribute('fill-opacity','.6');
+    lbl.textContent = lang==='ru'?'Реакция завершена ✓':'Реаксия анҷом ёфт ✓';
+    updateResult();
+    btn.disabled = false;
+    btn.textContent = T[lang]['lab.run'] || '⚡ Запустить реакцию';
+    running = false;
+  }, 2600);
+}
+
+/* ════════════════════════════════
+   HEADER SCROLL
+════════════════════════════════ */
+window.addEventListener('scroll',()=>{
+  document.getElementById('hdr').classList.toggle('scrolled', scrollY > 30);
+}, {passive:true});
+
+/* ════════════════════════════════
+   BURGER
+════════════════════════════════ */
+document.getElementById('burger').onclick = ()=>{
+  document.getElementById('mobNav').classList.toggle('open');
+};
+document.querySelectorAll('.mob-nav a').forEach(a=>a.addEventListener('click',()=>{
+  document.getElementById('mobNav').classList.remove('open');
+}));
+
+/* ════════════════════════════════
+   SCROLL REVEAL
+════════════════════════════════ */
+const io = new IntersectionObserver(entries => entries.forEach(e=>{
+  if(e.isIntersecting){ e.target.classList.add('in'); io.unobserve(e.target); }
+}), {threshold:.1});
+document.querySelectorAll('.rv').forEach(el => io.observe(el));
+</script>
+</body>
+</html>

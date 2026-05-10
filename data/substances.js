@@ -1,0 +1,33 @@
+﻿window.__CHEMLAB_SUBSTANCES__ = {
+  "substances": [
+    {"id":"water","name":"Вода","formula":"H2O","type":"water","category":"water","state":"liquid","visualState":"liquid","safetyLevel":"low","hazard_level":"low","ions":{"cation":"","anion":""}},
+    {"id":"HCl","name":"Соляная кислота","formula":"HCl","type":"acid","category":"acid","state":"aqueous","visualState":"solution","safetyLevel":"medium","hazard_level":"medium","ions":{"cation":"H+","anion":"Cl-"}},
+    {"id":"CH3COOH","name":"Уксусная кислота","formula":"CH3COOH","type":"acid","category":"acid","state":"aqueous","visualState":"solution","safetyLevel":"low","hazard_level":"low","ions":{"cation":"H+","anion":"CH3COO-"}},
+    {"id":"NaOH","name":"Гидроксид натрия","formula":"NaOH","type":"base","category":"base","state":"aqueous","visualState":"solution","safetyLevel":"medium","hazard_level":"medium","ions":{"cation":"Na+","anion":"OH-"}},
+    {"id":"AgNO3","name":"Нитрат серебра","formula":"AgNO3","type":"salt","category":"salt","state":"aqueous","visualState":"solution","safetyLevel":"medium","hazard_level":"medium","ions":{"cation":"Ag+","anion":"NO3-"}},
+    {"id":"NaCl","name":"Хлорид натрия","formula":"NaCl","type":"salt","category":"salt","state":"aqueous","visualState":"solution","safetyLevel":"low","hazard_level":"low","ions":{"cation":"Na+","anion":"Cl-"}},
+    {"id":"CuSO4","name":"Сульфат меди(II)","formula":"CuSO4","type":"salt","category":"salt","state":"aqueous","visualState":"solution","safetyLevel":"medium","hazard_level":"medium","ions":{"cation":"Cu2+","anion":"SO4^2-"}},
+    {"id":"FeCl3","name":"Хлорид железа(III)","formula":"FeCl3","type":"salt","category":"salt","state":"aqueous","visualState":"solution","safetyLevel":"medium","hazard_level":"medium","ions":{"cation":"Fe3+","anion":"Cl-"}},
+    {"id":"Na2CO3","name":"Карбонат натрия","formula":"Na2CO3","type":"salt","category":"salt","state":"aqueous","visualState":"solution","safetyLevel":"low","hazard_level":"low","ions":{"cation":"Na+","anion":"CO3^2-"}},
+    {"id":"NaHCO3","name":"Гидрокарбонат натрия","formula":"NaHCO3","type":"salt","category":"salt","state":"aqueous","visualState":"solution","safetyLevel":"low","hazard_level":"low","ions":{"cation":"Na+","anion":"HCO3-"}},
+    {"id":"BaCl2","name":"Хлорид бария","formula":"BaCl2","type":"salt","category":"salt","state":"aqueous","visualState":"solution","safetyLevel":"high","hazard_level":"high","ions":{"cation":"Ba2+","anion":"Cl-"}},
+    {"id":"Na2SO4","name":"Сульфат натрия","formula":"Na2SO4","type":"salt","category":"salt","state":"aqueous","visualState":"solution","safetyLevel":"low","hazard_level":"low","ions":{"cation":"Na+","anion":"SO4^2-"}},
+    {"id":"KI","name":"Иодид калия","formula":"KI","type":"salt","category":"salt","state":"aqueous","visualState":"solution","safetyLevel":"low","hazard_level":"low","ions":{"cation":"K+","anion":"I-"}},
+    {"id":"Pb(NO3)2","name":"Нитрат свинца(II)","formula":"Pb(NO3)2","type":"salt","category":"salt","state":"aqueous","visualState":"solution","safetyLevel":"high","hazard_level":"high","ions":{"cation":"Pb2+","anion":"NO3-"}},
+    {"id":"CaCO3","name":"Карбонат кальция","formula":"CaCO3","type":"salt","category":"salt","state":"solid","visualState":"powder","safetyLevel":"low","hazard_level":"low","ions":{"cation":"Ca2+","anion":"CO3^2-"}},
+    {"id":"NH4Cl","name":"Хлорид аммония","formula":"NH4Cl","type":"salt","category":"salt","state":"solid","visualState":"crystal","safetyLevel":"low","hazard_level":"low","ions":{"cation":"NH4+","anion":"Cl-"}},
+    {"id":"KMnO4","name":"Перманганат калия","formula":"KMnO4","type":"oxide","category":"oxidizer","state":"aqueous","visualState":"solution","safetyLevel":"medium","hazard_level":"medium","ions":{"cation":"K+","anion":"MnO4-"}},
+    {"id":"H2O2","name":"Перекись водорода","formula":"H2O2","type":"oxide","category":"oxidizer","state":"liquid","visualState":"liquid","safetyLevel":"medium","hazard_level":"medium","ions":{"cation":"","anion":""}},
+    {"id":"I2","name":"Йод","formula":"I2","type":"indicator","category":"indicator","state":"aqueous","visualState":"solution","safetyLevel":"low","hazard_level":"low","ions":{"cation":"","anion":""}},
+    {"id":"Starch","name":"Крахмал","formula":"(C6H10O5)n","type":"indicator","category":"indicator","state":"aqueous","visualState":"solution","safetyLevel":"low","hazard_level":"low","ions":{"cation":"","anion":""}},
+    {"id":"Phenolphthalein","name":"Фенолфталеин","formula":"C20H14O4","type":"indicator","category":"indicator","state":"aqueous","visualState":"solution","safetyLevel":"low","hazard_level":"low","ions":{"cation":"","anion":""}},
+    {"id":"MnO2","name":"Диоксид марганца","formula":"MnO2","type":"catalyst","category":"catalyst","state":"solid","visualState":"powder","safetyLevel":"low","hazard_level":"low","ions":{"cation":"","anion":""}},
+    {"id":"Zn","name":"Цинк","formula":"Zn","type":"metal","category":"metal","state":"solid","visualState":"metal_piece","safetyLevel":"low","hazard_level":"low","ions":{"cation":"Zn2+","anion":""}},
+    {"id":"Mg","name":"Магний","formula":"Mg","type":"metal","category":"metal","state":"solid","visualState":"metal_piece","safetyLevel":"medium","hazard_level":"medium","ions":{"cation":"Mg2+","anion":""}},
+    {"id":"Fe","name":"Железо","formula":"Fe","type":"metal","category":"metal","state":"solid","visualState":"metal_piece","safetyLevel":"low","hazard_level":"low","ions":{"cation":"Fe2+","anion":""}},
+    {"id":"Cu","name":"Медь","formula":"Cu","type":"metal","category":"metal","state":"solid","visualState":"metal_piece","safetyLevel":"low","hazard_level":"low","ions":{"cation":"Cu2+","anion":""}},
+    {"id":"FeSO4","name":"Сульфат железа(II)","formula":"FeSO4","type":"salt","category":"salt","state":"aqueous","visualState":"solution","safetyLevel":"low","hazard_level":"low","ions":{"cation":"Fe2+","anion":"SO4^2-"}}
+  ]
+}
+;
+

@@ -3,7 +3,7 @@
 
   const api = window.ChemLabApiClient;
   const t = window.ChemLabI18n.label;
-  const state = { substances: [], reactions: [], elements: [], editing: null };
+  const state = { substances: [], reactions: [], elements: [], tasks: [], handbook: [], editing: null };
 
   const login = document.getElementById("adminLogin");
   const shell = document.getElementById("adminShell");
@@ -86,22 +86,29 @@
   }
 
   async function loadAll() {
-    const [dashboard, users, reactions, substances, elements, experiments] = await Promise.all([
+    const [dashboard, users, reactions, substances, elements, experiments, tasks, handbook] = await Promise.all([
       api.get("/admin/dashboard"),
       api.get("/admin/users"),
       api.get("/admin/reactions"),
       api.get("/admin/substances"),
       api.get("/admin/periodic-elements"),
-      api.get("/admin/experiments")
+      api.get("/admin/experiments"),
+      api.get("/admin/tasks"),
+      api.get("/admin/handbook")
     ]);
     state.reactions = reactions.reactions || [];
     state.substances = substances.substances || [];
     state.elements = elements.elements || [];
+    state.tasks = tasks.tasks || [];
+    state.handbook = handbook.entries || [];
     renderDashboard(dashboard);
     renderUsers(users.users || []);
     renderReactions();
     renderSubstances();
     renderElements();
+    renderTasks();
+    renderHandbook();
+    renderConstructor();
     renderExperiments(experiments.experiments || []);
   }
 
@@ -193,6 +200,39 @@
     ], state.elements);
   }
 
+  function renderTasks() {
+    table("tasksTable", [
+      { label: "Название", value: "title" },
+      { label: "Уровень", value: "level" },
+      { label: "Цель", value: "goal" },
+      { label: "Реактивы", value: (r) => Array.isArray(r.reagents) ? r.reagents.join(" + ") : text(r.reagents) },
+      { label: "Реакция", value: "reaction_id" },
+      { label: "Баллы", value: "points" },
+      { label: "Статус", value: (r) => status(r.is_active) },
+      { label: "Действия", value: (r) => actions([
+        { label: "Редактировать", onClick: () => openTaskForm(r) },
+        { label: r.is_active ? "Выключить" : "Включить", onClick: () => toggle("tasks", r.id) },
+        { label: "Удалить", danger: true, onClick: () => remove("tasks", r.id) }
+      ]) }
+    ], state.tasks);
+  }
+
+  function renderHandbook() {
+    table("handbookTable", [
+      { label: "Категория", value: "category" },
+      { label: "Значок", value: "icon" },
+      { label: "Заголовок", value: "title" },
+      { label: "Текст", value: "text" },
+      { label: "Порядок", value: "sort_order" },
+      { label: "Статус", value: (r) => status(r.is_active) },
+      { label: "Действия", value: (r) => actions([
+        { label: "Редактировать", onClick: () => openHandbookForm(r) },
+        { label: r.is_active ? "Выключить" : "Включить", onClick: () => toggle("handbook", r.id) },
+        { label: "Удалить", danger: true, onClick: () => remove("handbook", r.id) }
+      ]) }
+    ], state.handbook);
+  }
+
   function renderExperiments(rows) {
     table("experimentsTable", [
       { label: "ID", value: "id" },
@@ -201,6 +241,49 @@
       { label: "Результат", value: "result" },
       { label: "Дата", value: (r) => formatDate(r.created_at) }
     ], rows);
+  }
+
+  function renderConstructor() {
+    const form = document.getElementById("constructorForm");
+    if (!form) return;
+    form.innerHTML = `
+      <div class="form-grid">
+        <label>Название опыта <input name="title" placeholder="Например: Получение кислорода" required></label>
+        <label>Тип реакции <select name="type">${Object.keys(window.ChemLabI18n.dictionaries.reactionType).map((key) => `<option value="${key}">${t("reactionType", key)}</option>`).join("")}</select></label>
+        <label>Реактив A <select name="reactant_a_id">${substanceOptions("")}</select></label>
+        <label>Реактив B <select name="reactant_b_id">${substanceOptions("")}</select></label>
+        <label>Уравнение <input name="equation" placeholder="A + B -> C"></label>
+        <label>Продукты <input name="products" placeholder="Продукт 1, продукт 2"></label>
+        <label>Цвет после реакции <input name="liquid_color_after" placeholder="clear, cloudy, pink"></label>
+        <label>Название газа <input name="gas_name" placeholder="CO2, O2, NH3"></label>
+        <label>Цвет осадка <input name="precipitate_color" placeholder="white, blue, yellow"></label>
+        <label>Опасность <select name="danger_level"><option value="low">Низкий</option><option value="medium">Средний</option><option value="high">Высокий</option></select></label>
+      </div>
+      <div class="check-grid">
+        <label><input type="checkbox" name="has_gas"> Газ</label>
+        <label><input type="checkbox" name="has_precipitate"> Осадок</label>
+        <label><input type="checkbox" name="requires_heating"> Нагрев</label>
+        <label><input type="checkbox" name="requires_catalyst"> Катализатор</label>
+        <label><input type="checkbox" name="has_heat"> Тепло</label>
+        <label><input type="checkbox" name="has_smoke"> Пар/дым</label>
+        <label><input type="checkbox" name="has_flash"> Вспышка</label>
+      </div>
+      <label>Наблюдение <textarea name="observation" placeholder="Что увидит ученик"></textarea></label>
+      <label>Объяснение <textarea name="explanation" placeholder="Химический смысл опыта"></textarea></label>
+      <label>Техника безопасности <textarea name="safety" placeholder="Что важно помнить"></textarea></label>
+      <button class="btn-admin" type="submit">Сохранить реакцию из конструктора</button>
+    `;
+    form.onsubmit = async (event) => {
+      event.preventDefault();
+      const data = Object.fromEntries(new FormData(form).entries());
+      const fd = new FormData(form);
+      ["has_gas", "has_precipitate", "requires_heating", "requires_catalyst", "has_heat", "has_smoke", "has_flash"].forEach((key) => data[key] = fd.has(key));
+      data.products = String(data.products || "").split(",").map((v) => v.trim()).filter(Boolean);
+      await api.post("/admin/reactions", data);
+      form.reset();
+      await loadAll();
+      alert("Реакция сохранена.");
+    };
   }
 
   function substanceOptions(selected) {
@@ -302,6 +385,46 @@
     `, async (form) => api.put("/admin/periodic-elements/" + encodeURIComponent(item.id), Object.fromEntries(form.entries())));
   }
 
+  function openTaskForm(item = {}) {
+    openModal(item.id ? "Редактировать задачу" : "Добавить задачу", `
+      <div class="form-grid">
+        <label>Название <input name="title" value="${text(item.title)}" required></label>
+        <label>Уровень <select name="level"><option value="easy" ${item.level === "easy" ? "selected" : ""}>Лёгкий</option><option value="medium" ${item.level === "medium" ? "selected" : ""}>Средний</option><option value="hard" ${item.level === "hard" ? "selected" : ""}>Сложный</option></select></label>
+        <label>Реактивы <input name="reagents" value="${Array.isArray(item.reagents) ? item.reagents.join(", ") : text(item.reagents)}"></label>
+        <label>Реакция <select name="reaction_id"><option value="">Не выбрано</option>${state.reactions.map((r) => `<option value="${r.id}" ${item.reaction_id === r.id ? "selected" : ""}>${r.title}</option>`).join("")}</select></label>
+        <label>Баллы <input name="points" type="number" min="0" value="${item.points || 10}"></label>
+      </div>
+      <label>Цель <textarea name="goal" required>${text(item.goal)}</textarea></label>
+      <label>Подсказки <textarea name="hints" placeholder="Каждая подсказка с новой строки">${Array.isArray(item.hints) ? item.hints.join("\n") : ""}</textarea></label>
+      <button class="btn-admin" type="submit">Сохранить</button>
+    `, async (form) => {
+      const body = Object.fromEntries(form.entries());
+      body.reagents = String(body.reagents || "").split(",").map((v) => v.trim()).filter(Boolean);
+      body.hints = String(body.hints || "").split(/\r?\n/).map((v) => v.trim()).filter(Boolean);
+      body.points = Number(body.points || 10);
+      if (item.id) await api.put("/admin/tasks/" + encodeURIComponent(item.id), body);
+      else await api.post("/admin/tasks", body);
+    });
+  }
+
+  function openHandbookForm(item = {}) {
+    openModal(item.id ? "Редактировать статью справочника" : "Добавить статью справочника", `
+      <div class="form-grid">
+        <label>Категория <input name="category" value="${text(item.category || "Справочник")}" required></label>
+        <label>Значок <input name="icon" value="${text(item.icon)}"></label>
+        <label>Заголовок <input name="title" value="${text(item.title)}" required></label>
+        <label>Порядок <input name="sort_order" type="number" value="${item.sort_order || 0}"></label>
+      </div>
+      <label>Текст <textarea name="text" required>${text(item.text)}</textarea></label>
+      <button class="btn-admin" type="submit">Сохранить</button>
+    `, async (form) => {
+      const body = Object.fromEntries(form.entries());
+      body.sort_order = Number(body.sort_order || 0);
+      if (item.id) await api.put("/admin/handbook/" + encodeURIComponent(item.id), body);
+      else await api.post("/admin/handbook", body);
+    });
+  }
+
   async function toggle(type, id) {
     await api.patch(`/admin/${type}/${encodeURIComponent(id)}/toggle`, {});
     await loadAll();
@@ -328,6 +451,8 @@
     document.getElementById("closeModal").addEventListener("click", closeModal);
     document.getElementById("addReaction").addEventListener("click", () => openReactionForm());
     document.getElementById("addSubstance").addEventListener("click", () => openSubstanceForm());
+    document.getElementById("addTask").addEventListener("click", () => openTaskForm());
+    document.getElementById("addHandbook").addEventListener("click", () => openHandbookForm());
     document.getElementById("adminLogout").addEventListener("click", async () => {
       await window.ChemLabAuth.logout();
       location.reload();

@@ -173,3 +173,27 @@ func (h *CatalogHandler) ReactionByID(w http.ResponseWriter, r *http.Request) {
 	}
 	writeRawJSON(w, http.StatusOK, doc)
 }
+
+func (h *CatalogHandler) Tasks(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodGet {
+		writeError(w, http.StatusMethodNotAllowed, "method not allowed")
+		return
+	}
+	rows := queryList(r, h.store.DB(), `
+		SELECT id, title, level, goal, reagents, hints, reaction_id, points, is_active, created_at, updated_at
+		FROM tasks WHERE is_active = true ORDER BY updated_at DESC
+	`)
+	writeJSON(w, http.StatusOK, map[string]any{"tasks": rows})
+}
+
+func (h *CatalogHandler) Handbook(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodGet {
+		writeError(w, http.StatusMethodNotAllowed, "method not allowed")
+		return
+	}
+	rows := queryList(r, h.store.DB(), `
+		SELECT id, category, icon, title, text, sort_order, is_active, created_at, updated_at
+		FROM handbook_entries WHERE is_active = true ORDER BY sort_order, title
+	`)
+	writeJSON(w, http.StatusOK, map[string]any{"entries": rows})
+}

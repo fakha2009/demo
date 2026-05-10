@@ -69,6 +69,8 @@
     getReaction: (id) => apiClient.get("/reactions/" + encodeURIComponent(id)),
     getMe: () => apiClient.get("/me"),
     getProgress: () => apiClient.get("/progress/me"),
+    getTasks: () => apiClient.get("/tasks"),
+    getHandbook: () => apiClient.get("/handbook"),
     saveAttempt: (payload) => apiClient.post("/experiments", payload),
     login: async (email, password) => {
       const result = await apiClient.post("/auth/login", { email, password });

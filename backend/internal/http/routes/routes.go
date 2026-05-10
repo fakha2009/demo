@@ -29,6 +29,8 @@ func NewRouter(cfg config.Config, store *repositories.Store) http.Handler {
 	mux.HandleFunc("/api/substances/", catalogHandler.SubstanceByID)
 	mux.HandleFunc("/api/reactions", catalogHandler.Reactions)
 	mux.HandleFunc("/api/reactions/", catalogHandler.ReactionByID)
+	mux.HandleFunc("/api/tasks", catalogHandler.Tasks)
+	mux.HandleFunc("/api/handbook", catalogHandler.Handbook)
 	mux.HandleFunc("/api/auth/register", authHandler.Register)
 	mux.HandleFunc("/api/auth/login", authHandler.Login)
 	mux.Handle("/api/auth/logout", authMiddleware(http.HandlerFunc(authHandler.Logout)))

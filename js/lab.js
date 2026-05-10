@@ -194,9 +194,11 @@
     }
     try {
       await window.ChemLabAPI.health();
-      const [reactionPayload, substancePayload] = await Promise.all([
+      const [reactionPayload, substancePayload, taskPayload, handbookPayload] = await Promise.all([
         window.ChemLabAPI.getReactions(),
-        window.ChemLabAPI.getSubstances()
+        window.ChemLabAPI.getSubstances(),
+        window.ChemLabAPI.getTasks?.() || Promise.resolve({ tasks: [] }),
+        window.ChemLabAPI.getHandbook?.() || Promise.resolve({ entries: [] })
       ]);
       if (Array.isArray(reactionPayload.reactions) && reactionPayload.reactions.length) {
         window.ChemLabReactionData.reactionRules = reactionPayload.reactions.map(function (reaction) {
@@ -241,6 +243,30 @@
             color: substance.color || "#e0f2fe"
           };
         });
+      }
+      if (Array.isArray(taskPayload.tasks) && taskPayload.tasks.length) {
+        tasks.splice(0, tasks.length, ...taskPayload.tasks.map(function (task) {
+          return {
+            id: task.id,
+            title: task.title,
+            level: task.level || "Базовый",
+            goal: task.goal || "",
+            reagents: Array.isArray(task.reagents) ? task.reagents : [],
+            hints: Array.isArray(task.hints) ? task.hints : [],
+            reactionId: task.reaction_id || task.reactionId,
+            points: Number(task.points || 10)
+          };
+        }));
+      }
+      if (Array.isArray(handbookPayload.entries) && handbookPayload.entries.length) {
+        handbook.splice(0, handbook.length, ...handbookPayload.entries.map(function (entry) {
+          return {
+            category: entry.category || "Справочник",
+            icon: entry.icon || "•",
+            title: entry.title || "Материал",
+            text: entry.text || ""
+          };
+        }));
       }
       uiState.dataSource = "api";
       setBackendStatus("connected", "Аккаунт доступен");

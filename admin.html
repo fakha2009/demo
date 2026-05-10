@@ -37,6 +37,9 @@
         <button type="button" data-admin-section="reactions">Реакции</button>
         <button type="button" data-admin-section="substances">Вещества</button>
         <button type="button" data-admin-section="elements">Элементы</button>
+        <button type="button" data-admin-section="tasks">Задачи</button>
+        <button type="button" data-admin-section="handbook">Справочник</button>
+        <button type="button" data-admin-section="constructor">Конструктор</button>
         <button type="button" data-admin-section="experiments">История опытов</button>
       </nav>
       <button class="admin-logout" type="button" id="adminLogout">Выйти</button>
@@ -76,6 +79,24 @@
       <section class="admin-section" id="section-elements">
         <p class="muted">Администратор может дополнять применение, интересные факты, безопасность и свойства элементов.</p>
         <div class="table-wrap"><table class="admin-table" id="elementsTable"></table></div>
+      </section>
+
+      <section class="admin-section" id="section-tasks">
+        <div class="admin-toolbar"><p class="muted">Создавайте учебные задания с реактивами, подсказками и баллами.</p><button class="btn-admin" type="button" id="addTask">Добавить задачу</button></div>
+        <div class="table-wrap"><table class="admin-table" id="tasksTable"></table></div>
+      </section>
+
+      <section class="admin-section" id="section-handbook">
+        <div class="admin-toolbar"><p class="muted">Редактируйте справочник: безопасность, оборудование, типы реакций и основные понятия.</p><button class="btn-admin" type="button" id="addHandbook">Добавить статью</button></div>
+        <div class="table-wrap"><table class="admin-table" id="handbookTable"></table></div>
+      </section>
+
+      <section class="admin-section" id="section-constructor">
+        <article class="admin-card">
+          <h2>Конструктор реакции</h2>
+          <p class="muted">Соберите опыт из двух реактивов, эффектов и условий. После сохранения реакция появится в каталоге и лаборатории.</p>
+          <form class="admin-form" id="constructorForm"></form>
+        </article>
       </section>
 
       <section class="admin-section" id="section-experiments">

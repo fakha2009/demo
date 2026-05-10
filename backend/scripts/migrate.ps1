@@ -3,6 +3,9 @@ $ErrorActionPreference = "Stop"
 if (-not $env:DATABASE_URL) {
   $env:DATABASE_URL = "host=localhost port=5432 user=postgres password=postgres dbname=chemtj sslmode=disable"
 }
+if (-not $env:PGCLIENTENCODING) {
+  $env:PGCLIENTENCODING = "UTF8"
+}
 
 $psql = (Get-Command psql -ErrorAction SilentlyContinue).Source
 if (-not $psql) {

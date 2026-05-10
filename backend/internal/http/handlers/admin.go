@@ -64,6 +64,26 @@ func (h *AdminHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		h.updateElement(w, r, parts[1], user.ID)
 	case path == "experiments" && r.Method == http.MethodGet:
 		h.experiments(w, r)
+	case path == "tasks" && r.Method == http.MethodGet:
+		h.tasks(w, r)
+	case path == "tasks" && r.Method == http.MethodPost:
+		h.saveTask(w, r, "", user.ID)
+	case len(parts) == 2 && parts[0] == "tasks" && r.Method == http.MethodPut:
+		h.saveTask(w, r, parts[1], user.ID)
+	case len(parts) == 2 && parts[0] == "tasks" && r.Method == http.MethodDelete:
+		h.deleteEntity(w, r, "tasks", parts[1], user.ID)
+	case len(parts) == 3 && parts[0] == "tasks" && parts[2] == "toggle" && r.Method == http.MethodPatch:
+		h.toggle(w, r, "tasks", parts[1], user.ID)
+	case path == "handbook" && r.Method == http.MethodGet:
+		h.handbook(w, r)
+	case path == "handbook" && r.Method == http.MethodPost:
+		h.saveHandbook(w, r, "", user.ID)
+	case len(parts) == 2 && parts[0] == "handbook" && r.Method == http.MethodPut:
+		h.saveHandbook(w, r, parts[1], user.ID)
+	case len(parts) == 2 && parts[0] == "handbook" && r.Method == http.MethodDelete:
+		h.deleteEntity(w, r, "handbook_entries", parts[1], user.ID)
+	case len(parts) == 3 && parts[0] == "handbook" && parts[2] == "toggle" && r.Method == http.MethodPatch:
+		h.toggle(w, r, "handbook_entries", parts[1], user.ID)
 	default:
 		writeError(w, http.StatusNotFound, "admin endpoint not found")
 	}
@@ -295,7 +315,7 @@ func (h *AdminHandler) saveSubstance(w http.ResponseWriter, r *http.Request, id,
 }
 
 func (h *AdminHandler) deleteEntity(w http.ResponseWriter, r *http.Request, table, id, adminID string) {
-	if table != "reactions" && table != "substances" {
+	if table != "reactions" && table != "substances" && table != "tasks" && table != "handbook_entries" {
 		writeError(w, http.StatusBadRequest, "invalid entity")
 		return
 	}
@@ -309,7 +329,7 @@ func (h *AdminHandler) deleteEntity(w http.ResponseWriter, r *http.Request, tabl
 }
 
 func (h *AdminHandler) toggle(w http.ResponseWriter, r *http.Request, table, id, adminID string) {
-	if table != "reactions" && table != "substances" {
+	if table != "reactions" && table != "substances" && table != "tasks" && table != "handbook_entries" {
 		writeError(w, http.StatusBadRequest, "invalid entity")
 		return
 	}
@@ -368,6 +388,86 @@ func (h *AdminHandler) updateElement(w http.ResponseWriter, r *http.Request, id,
 	}
 	h.log(r, adminID, "admin_update_element", "periodic_element", id, req)
 	h.elements(w, r)
+}
+
+func (h *AdminHandler) tasks(w http.ResponseWriter, r *http.Request) {
+	rows := queryList(r, h.store.DB(), `
+		SELECT id, title, level, goal, reagents, hints, reaction_id, points, is_active, created_at, updated_at
+		FROM tasks ORDER BY updated_at DESC
+	`)
+	writeJSON(w, http.StatusOK, map[string]any{"tasks": rows})
+}
+
+func (h *AdminHandler) saveTask(w http.ResponseWriter, r *http.Request, id, adminID string) {
+	var req map[string]any
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		writeError(w, http.StatusBadRequest, "invalid json")
+		return
+	}
+	title := strings.TrimSpace(stringValue(req["title"]))
+	if title == "" {
+		writeError(w, http.StatusBadRequest, "title is required")
+		return
+	}
+	if id == "" {
+		id = slugID(title)
+	}
+	reagents, _ := json.Marshal(req["reagents"])
+	hints, _ := json.Marshal(req["hints"])
+	data, _ := json.Marshal(req)
+	_, err := h.store.DB().ExecContext(r.Context(), `
+		INSERT INTO tasks (id, title, level, goal, reagents, hints, reaction_id, points, data, updated_at)
+		VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,now())
+		ON CONFLICT (id) DO UPDATE SET
+			title=EXCLUDED.title, level=EXCLUDED.level, goal=EXCLUDED.goal, reagents=EXCLUDED.reagents,
+			hints=EXCLUDED.hints, reaction_id=EXCLUDED.reaction_id, points=EXCLUDED.points,
+			data=EXCLUDED.data, updated_at=now()
+	`, id, title, defaultString(req["level"], "Базовый"), stringValue(req["goal"]), reagents, hints,
+		stringValue(req["reaction_id"]), intValue(req["points"], 10), data)
+	if err != nil {
+		writeError(w, http.StatusInternalServerError, "failed to save task")
+		return
+	}
+	h.log(r, adminID, "admin_save_task", "task", id, req)
+	h.tasks(w, r)
+}
+
+func (h *AdminHandler) handbook(w http.ResponseWriter, r *http.Request) {
+	rows := queryList(r, h.store.DB(), `
+		SELECT id, category, icon, title, text, sort_order, is_active, created_at, updated_at
+		FROM handbook_entries ORDER BY sort_order, title
+	`)
+	writeJSON(w, http.StatusOK, map[string]any{"entries": rows})
+}
+
+func (h *AdminHandler) saveHandbook(w http.ResponseWriter, r *http.Request, id, adminID string) {
+	var req map[string]any
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		writeError(w, http.StatusBadRequest, "invalid json")
+		return
+	}
+	title := strings.TrimSpace(stringValue(req["title"]))
+	if title == "" {
+		writeError(w, http.StatusBadRequest, "title is required")
+		return
+	}
+	if id == "" {
+		id = slugID(title)
+	}
+	_, err := h.store.DB().ExecContext(r.Context(), `
+		INSERT INTO handbook_entries (id, category, icon, title, text, sort_order, updated_at)
+		VALUES ($1,$2,$3,$4,$5,$6,now())
+		ON CONFLICT (id) DO UPDATE SET
+			category=EXCLUDED.category, icon=EXCLUDED.icon, title=EXCLUDED.title,
+			text=EXCLUDED.text, sort_order=EXCLUDED.sort_order, updated_at=now()
+	`, id, defaultString(req["category"], "Справочник"), stringValue(req["icon"]), title,
+		stringValue(req["text"]), intValue(req["sort_order"], 0))
+	if err != nil {
+		writeError(w, http.StatusInternalServerError, "failed to save handbook entry")
+		return
+	}
+	h.log(r, adminID, "admin_save_handbook", "handbook", id, req)
+	h.handbook(w, r)
 }
 
 func (h *AdminHandler) experiments(w http.ResponseWriter, r *http.Request) {
@@ -446,6 +546,17 @@ func defaultString(v any, fallback string) string {
 func boolValue(v any) bool {
 	b, _ := v.(bool)
 	return b
+}
+
+func intValue(v any, fallback int) int {
+	switch n := v.(type) {
+	case float64:
+		return int(n)
+	case int:
+		return n
+	default:
+		return fallback
+	}
 }
 
 func slugID(value string) string {

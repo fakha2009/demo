@@ -4,6 +4,7 @@
   "private": true,
   "scripts": {
     "build": "node scripts/generate-config.mjs",
+    "build:vercel": "node scripts/build-vercel.mjs",
     "dev": "py -m http.server 5173",
     "start": "py -m http.server 5173",
     "backend": "cd backend && go run ./cmd/api",

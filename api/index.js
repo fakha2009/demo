@@ -3,12 +3,24 @@ const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 
 const pool = new Pool({
-  connectionString: process.env.DATABASE_URL || process.env.POSTGRES_URL_NON_POOLING || process.env.POSTGRES_URL,
+  connectionString: databaseUrl(),
   ssl: { rejectUnauthorized: false },
   max: 3
 });
 
 const jwtSecret = process.env.JWT_SECRET || process.env.SUPABASE_JWT_SECRET || "change-me";
+
+function databaseUrl() {
+  const raw = process.env.DATABASE_URL || process.env.POSTGRES_URL_NON_POOLING || process.env.POSTGRES_URL;
+  if (!raw) return raw;
+  try {
+    const url = new URL(raw);
+    url.searchParams.delete("sslmode");
+    return url.toString();
+  } catch {
+    return raw.replace(/([?&])sslmode=[^&]+&?/i, "$1").replace(/[?&]$/, "");
+  }
+}
 
 module.exports = async function handler(req, res) {
   setCors(req, res);

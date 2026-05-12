@@ -46,7 +46,7 @@ html[data-theme="light"] body{background:radial-gradient(circle at 16% 0%,rgba(0
 .logo-mark img{width:100%;height:100%;object-fit:contain;border-radius:9px}
 .nav-links{display:flex;gap:1.8rem;margin:0 auto}
 .nav-links a{color:var(--t3);text-decoration:none;font-size:.85rem;font-weight:500;transition:.2s;letter-spacing:.01em}
-.nav-links a:hover{color:var(--a)}
+.nav-links a:hover,.nav-links a.is-active{color:var(--a)}
 .hdr-right{display:flex;align-items:center;gap:8px}
 .lang-switch{display:flex;background:var(--s1);border:1px solid var(--bd);border-radius:8px;overflow:hidden}
 .lang-switch button{padding:.3rem .7rem;font-size:.78rem;font-weight:600;border:none;background:transparent;color:var(--t3);cursor:pointer;transition:.2s}
@@ -64,7 +64,7 @@ html[data-theme="light"] body{background:radial-gradient(circle at 16% 0%,rgba(0
 /* ─ MOBILE NAV ─ */
 .mob-nav{display:none;position:fixed;inset:60px 0 auto;background:rgba(7,9,15,.97);backdrop-filter:blur(20px);border-bottom:1px solid var(--bd);padding:1rem;z-index:199}
 .mob-nav a{display:block;padding:.65rem 1rem;color:var(--t2);text-decoration:none;border-radius:8px;font-size:.9rem;transition:.15s}
-.mob-nav a:hover{background:var(--s1);color:var(--a)}
+.mob-nav a:hover,.mob-nav a.is-active{background:var(--s1);color:var(--a)}
 .mob-nav.open{display:block}
 
 /* ─ HERO ─ */
@@ -856,6 +856,20 @@ const io = new IntersectionObserver(entries => entries.forEach(e=>{
   if(e.isIntersecting){ e.target.classList.add('in'); io.unobserve(e.target); }
 }), {threshold:.1});
 document.querySelectorAll('.rv').forEach(el => io.observe(el));
+
+const sectionLinks = Array.from(document.querySelectorAll('.nav-links a[href^="#"], .mob-nav a[href^="#"]'));
+const sections = sectionLinks
+  .map(a => document.querySelector(a.getAttribute('href')))
+  .filter(Boolean);
+const navObserver = new IntersectionObserver(entries => {
+  const visible = entries
+    .filter(entry => entry.isIntersecting)
+    .sort((a, b) => b.intersectionRatio - a.intersectionRatio)[0];
+  if(!visible) return;
+  const id = '#' + visible.target.id;
+  sectionLinks.forEach(link => link.classList.toggle('is-active', link.getAttribute('href') === id));
+}, {rootMargin:'-35% 0px -50% 0px', threshold:[0.1, 0.35, 0.65]});
+sections.forEach(section => navObserver.observe(section));
 </script>
 </body>
 </html>

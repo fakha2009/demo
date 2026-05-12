@@ -13,6 +13,53 @@
   background: rgba(255, 255, 255, 0.025);
 }
 
+.lab-brief {
+  width: min(100%, 1540px);
+  margin: 14px auto 0;
+  padding: 0 18px;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.lab-brief > div {
+  min-height: 92px;
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 4px 10px;
+  align-content: center;
+  padding: 14px;
+  border: 1px solid rgba(115, 214, 255, 0.16);
+  border-radius: 8px;
+  background: linear-gradient(180deg, rgba(20, 28, 38, 0.86), rgba(13, 18, 25, 0.72));
+  box-shadow: 0 14px 34px rgba(0, 0, 0, 0.18);
+}
+
+.lab-brief span {
+  grid-row: span 2;
+  width: 34px;
+  height: 34px;
+  display: grid;
+  place-items: center;
+  border-radius: 8px;
+  color: #06111f;
+  background: linear-gradient(135deg, var(--cyan), var(--green));
+  font-size: 12px;
+  font-weight: 950;
+}
+
+.lab-brief strong {
+  color: var(--text);
+  font-size: 14px;
+}
+
+.lab-brief p {
+  margin: 0;
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.35;
+}
+
 .tool-rail {
   grid-area: tools;
   display: flex;
@@ -1673,6 +1720,10 @@ body[data-heat-state="heating_not_required"] .reaction-vessel .vessel-glass {
 }
 
 @media (max-width: 1024px) {
+  .lab-brief {
+    grid-template-columns: 1fr;
+  }
+
   .lab-shell {
     grid-template-columns: 92px 1fr;
     grid-template-rows: 560px auto auto;
@@ -2797,6 +2848,14 @@ body[data-heat-state="heating_not_required"] .reaction-vessel .vessel-glass {
 }
 
 @media (max-width: 760px) {
+  .lab-brief {
+    padding: 0 9px;
+  }
+
+  .lab-brief > div {
+    min-height: 0;
+  }
+
   .study-layout {
     width: min(100% - 18px, 1480px);
     padding: 14px;

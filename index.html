@@ -17,8 +17,18 @@
   --glass:rgba(255,255,255,.045);--shadow:0 24px 80px rgba(0,0,0,.38);
   --r:14px;--r2:10px;--r3:24px;
 }
+html[data-theme="light"]{
+  --bg:#f6f9fc;--bg2:#eef4f9;--bg3:#ffffff;
+  --s1:#ffffff;--s2:#eef6ff;--s3:#e4eefb;
+  --bd:#d8e5f0;--bd2:#acc6df;--bd3:#7ea6c8;
+  --t1:#102033;--t2:#40576f;--t3:#6e8295;
+  --a:#007fa3;--a2:#2563eb;--a3:#4f46e5;
+  --glass:rgba(15,32,51,.045);--shadow:0 22px 68px rgba(35,70,105,.14);
+  --grd:linear-gradient(135deg,#009bc2,#2563eb);
+}
 html{scroll-behavior:smooth}
-body{background:radial-gradient(circle at 20% 0%,rgba(34,211,238,.08),transparent 32%),radial-gradient(circle at 90% 10%,rgba(99,102,241,.08),transparent 28%),var(--bg);color:var(--t1);font-family:'Segoe UI',system-ui,sans-serif;line-height:1.65;overflow-x:hidden}
+body{background:radial-gradient(circle at 20% 0%,rgba(34,211,238,.08),transparent 32%),radial-gradient(circle at 90% 10%,rgba(99,102,241,.08),transparent 28%),var(--bg);color:var(--t1);font-family:'Segoe UI',system-ui,sans-serif;line-height:1.65;overflow-x:hidden;transition:background .25s ease,color .25s ease}
+html[data-theme="light"] body{background:radial-gradient(circle at 16% 0%,rgba(0,155,194,.14),transparent 30%),radial-gradient(circle at 88% 8%,rgba(37,99,235,.11),transparent 26%),linear-gradient(180deg,#f7fbff 0%,#eef5fb 52%,#f9fbfd 100%)}
 ::selection{background:rgba(34,211,238,.2);color:var(--a)}
 ::-webkit-scrollbar{width:5px}::-webkit-scrollbar-track{background:var(--bg)}::-webkit-scrollbar-thumb{background:var(--bd3);border-radius:3px}
 
@@ -41,6 +51,8 @@ body{background:radial-gradient(circle at 20% 0%,rgba(34,211,238,.08),transparen
 .lang-switch{display:flex;background:var(--s1);border:1px solid var(--bd);border-radius:8px;overflow:hidden}
 .lang-switch button{padding:.3rem .7rem;font-size:.78rem;font-weight:600;border:none;background:transparent;color:var(--t3);cursor:pointer;transition:.2s}
 .lang-switch button.active{background:var(--grd);color:#fff}
+.theme-toggle{width:36px;height:32px;display:inline-grid;place-items:center;border:1px solid var(--bd);border-radius:8px;color:var(--t1);background:var(--s1);cursor:pointer;transition:.2s}
+.theme-toggle:hover{border-color:var(--a);color:var(--a);transform:translateY(-1px)}
 .btn{display:inline-flex;align-items:center;gap:6px;padding:.5rem 1.1rem;border-radius:8px;font-size:.82rem;font-weight:600;cursor:pointer;text-decoration:none;border:none;transition:.2s}
 .btn-p{background:var(--grd);color:#fff;box-shadow:0 0 18px rgba(34,211,238,.25)}
 .btn-p:hover{opacity:.9;box-shadow:0 0 28px rgba(34,211,238,.4)}
@@ -209,6 +221,22 @@ footer p{font-size:.75rem;color:var(--t3)}
 
 /* ─ FINAL PREMIUM PASS ─ */
 .hdr{background:linear-gradient(180deg,rgba(7,9,15,.72),rgba(7,9,15,.18));backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px)}
+html[data-theme="light"] .hdr{background:linear-gradient(180deg,rgba(255,255,255,.86),rgba(255,255,255,.56));box-shadow:0 10px 34px rgba(25,55,85,.08)}
+html[data-theme="light"] .hdr.scrolled{background:rgba(255,255,255,.9)}
+html[data-theme="light"] .hero::before{background:linear-gradient(145deg,rgba(255,255,255,.76),rgba(255,255,255,.24) 44%);border-color:rgba(0,127,163,.14);box-shadow:0 34px 95px rgba(27,72,108,.12)}
+html[data-theme="light"] .fcard,
+html[data-theme="light"] .micro-board,
+html[data-theme="light"] .why-card,
+html[data-theme="light"] .feat,
+html[data-theme="light"] .demo-step,
+html[data-theme="light"] .logic-card,
+html[data-theme="light"] .road-item,
+html[data-theme="light"] .res-panel{background:rgba(255,255,255,.82);box-shadow:0 16px 44px rgba(38,77,112,.1)}
+html[data-theme="light"] .stats-band,
+html[data-theme="light"] .demo-sec,
+html[data-theme="light"] footer{background:linear-gradient(180deg,rgba(238,246,252,.96),rgba(248,251,253,.96))}
+html[data-theme="light"] .lab-wrap{background:linear-gradient(180deg,#eef5fb,#f7fbff)}
+html[data-theme="light"] .lab-stage{background:linear-gradient(145deg,rgba(255,255,255,.92),rgba(232,242,250,.86));box-shadow:0 24px 70px rgba(34,70,105,.14)}
 .logo-mark{position:relative;overflow:hidden}.logo-mark::after{content:'';position:absolute;inset:-30%;background:linear-gradient(120deg,transparent,rgba(255,255,255,.36),transparent);transform:translateX(-140%) rotate(18deg);animation:shine 5.4s ease-in-out infinite}@keyframes shine{0%,72%{transform:translateX(-140%) rotate(18deg)}100%{transform:translateX(140%) rotate(18deg)}}
 .hero{isolation:isolate}.hero::before{content:'';position:absolute;inset:90px 3% 50px;border:1px solid rgba(34,211,238,.08);border-radius:34px;background:linear-gradient(145deg,rgba(255,255,255,.025),transparent 42%);z-index:-1;box-shadow:0 40px 120px rgba(0,0,0,.24)}
 .hero h1{max-width:650px}.hero-sub{border-left:2px solid rgba(34,211,238,.36);padding-left:1rem}.hero-cta .btn{min-height:42px}.btn{will-change:transform}.btn:hover{transform:translateY(-1px)}
@@ -253,6 +281,7 @@ footer p{font-size:.75rem;color:var(--t3)}
       <button id="btnRU" class="active" onclick="setLang('ru')">RU</button>
       <button id="btnTJ" onclick="setLang('tj')">ТЈ</button>
     </div>
+    <button class="theme-toggle" id="themeToggle" type="button" aria-label="Включить светлую тему" title="Сменить тему">☀</button>
     <a class="btn btn-p" href="demo.html#lab" data-i="nav.cta">Открыть демо</a>
     <button class="burger" id="burger" aria-label="Меню"><span></span><span></span><span></span></button>
   </div>
@@ -270,10 +299,10 @@ footer p{font-size:.75rem;color:var(--t3)}
   <div class="hero-copy">
     <div class="hero-eyebrow"><div class="dot-pulse"></div><span data-i="hero.badge">STEM-проект · Таджикистан 🇹🇯</span></div>
     <h1><span class="grad-text" data-i="hero.h1a">Цифровая химическая</span><br><span data-i="hero.h1b">лаборатория</span></h1>
-    <p class="hero-sub" data-i="hero.sub">ChemLab TJ делает химию безопасной, понятной и наглядной — даже там, где нет оборудованной лаборатории. Опыты прямо в браузере, без установки.</p>
+    <p class="hero-sub" data-i="hero.sub">ChemLab TJ помогает показать химические реакции на уроке и в презентации: ученик видит реагенты, визуальный эффект, уравнение и вывод прямо в браузере.</p>
     <div class="trust-row">
-      <span class="trust-chip"><b>✓</b><span data-i="trust.1">Без установки</span></span>
-      <span class="trust-chip"><b>✓</b><span data-i="trust.2">Для уроков химии</span></span>
+      <span class="trust-chip"><b>✓</b><span data-i="trust.1">Запуск в браузере</span></span>
+      <span class="trust-chip"><b>✓</b><span data-i="trust.2">Для урока и защиты проекта</span></span>
       <span class="trust-chip"><b>✓</b><span data-i="trust.3">RU / TJ интерфейс</span></span>
       <span class="trust-chip"><b>✓</b><span data-i="trust.4">Безопасные демонстрации</span></span>
     </div>
@@ -284,7 +313,7 @@ footer p{font-size:.75rem;color:var(--t3)}
     <div class="hero-stats">
       <div class="hstat"><strong>2,3 млн+</strong><span data-i="hero.s1">школьников</span></div>
       <div class="hstat"><strong>130 тыс+</strong><span data-i="hero.s2">учителей</span></div>
-      <div class="hstat"><strong>1 млн+</strong><span data-i="hero.s3">целевая аудитория</span></div>
+      <div class="hstat"><strong>6+</strong><span data-i="hero.s3">готовых опытов</span></div>
     </div>
   </div>
   <div class="hero-vis">
@@ -345,8 +374,8 @@ footer p{font-size:.75rem;color:var(--t3)}
   <div class="stats-band-inner">
     <div class="rv">
       <p class="sec-label" data-i="stats.label">Образование · Таджикистан</p>
-      <h2 class="sec-title" data-i="stats.title">Реальный рынок, понятная аудитория</h2>
-      <p class="sec-lead" data-i="stats.lead">ChemLab TJ создаётся для страны с быстро растущей системой образования. Более 2,3 млн школьников и 130 тыс. учителей — реальная аудитория, которой нужен цифровой инструмент.</p>
+      <h2 class="sec-title" data-i="stats.title">Проект понятен школе, ученику и жюри</h2>
+      <p class="sec-lead" data-i="stats.lead">ChemLab TJ показывает практическую пользу без сложного оборудования: это демонстрационный инструмент для урока, домашнего повторения и презентации STEM-проекта.</p>
       <a class="btn btn-o" href="#lab-anchor" style="margin-top:1.4rem" data-i="stats.cta">Попробовать демо →</a>
     </div>
     <div class="stats-grid rv">
@@ -386,8 +415,8 @@ footer p{font-size:.75rem;color:var(--t3)}
 <section class="sec" id="features">
   <div class="rv">
     <p class="sec-label" data-i="feat.label">Для кого</p>
-    <h2 class="sec-title" data-i="feat.title">Платформа для урока, подготовки и демонстрации</h2>
-    <p class="sec-lead" data-i="feat.lead">Один инструмент — для разных задач: учитель объясняет, ученик исследует, школа без лаборатории показывает реакции.</p>
+    <h2 class="sec-title" data-i="feat.title">Одна демонстрация закрывает несколько учебных задач</h2>
+    <p class="sec-lead" data-i="feat.lead">На главной странице видно идею проекта, в демо можно запустить опыт, а в расширенной лаборатории — собрать сценарий из посуды, реактивов и условий.</p>
   </div>
   <div class="feat-grid">
     <div class="feat rv"><span class="feat-ico">🎓</span><h3 data-i="f1.t">Школьники 7–11 классов</h3><p data-i="f1.p">Понимают свойства веществ через визуальные опыты, карточки элементов и повторяемые сценарии без риска.</p></div>
@@ -443,7 +472,7 @@ footer p{font-size:.75rem;color:var(--t3)}
   <div class="rv">
     <p class="sec-label" data-i="lab.label">Цифровая лаборатория</p>
     <h2 class="sec-title" data-i="lab.title">Проведите реакцию прямо здесь</h2>
-    <p class="sec-lead" data-i="lab.lead">Выберите реагенты и запустите реакцию — увидите результат, уравнение и наблюдение, как на реальном уроке химии.</p>
+    <p class="sec-lead" data-i="lab.lead">Быстрый режим для презентации: выберите реакцию, нажмите запуск и покажите наблюдение без перехода в сложный конструктор.</p>
   </div>
   <div class="lab-stage rv">
     <div>
@@ -558,22 +587,22 @@ const T = {
     'nav.roadmap':'Развитие','nav.cta':'Открыть демо',
     'hero.badge':'STEM-проект · Таджикистан 🇹🇯',
     'hero.h1a':'Цифровая химическая','hero.h1b':'лаборатория',
-    'hero.sub':'ChemLab TJ — цифровая химическая лаборатория для школ Таджикистана: безопасные опыты, понятные наблюдения и уравнения прямо в браузере, без установки и сложной подготовки.',
+    'hero.sub':'ChemLab TJ помогает показать химические реакции на уроке и в презентации: ученик видит реагенты, визуальный эффект, уравнение и вывод прямо в браузере.',
     'hero.cta1':'⚗️ Открыть демо','hero.cta2':'О проекте →',
-    'hero.s1':'школьников','hero.s2':'учителей','hero.s3':'целевая аудитория',
+    'hero.s1':'школьников','hero.s2':'учителей','hero.s3':'готовых опытов',
     'fc.audience':'Аудитория','fc.sub':'учеников и учителей','fc.safe':'Безопасно','fc.browser':'работает в браузере',
     'micro.label':'Модель опыта',
-    'trust.1':'Без установки','trust.2':'Для уроков химии','trust.3':'RU / TJ интерфейс','trust.4':'Безопасные демонстрации',
+    'trust.1':'Запуск в браузере','trust.2':'Для урока и защиты проекта','trust.3':'RU / TJ интерфейс','trust.4':'Безопасные демонстрации',
     'stats.label':'Образование · Таджикистан',
-    'stats.title':'Реальный рынок, понятная аудитория',
-    'stats.lead':'ChemLab TJ ориентирован на образовательную среду Таджикистана. Эти цифры показывают потенциальную аудиторию, а не гарантированное число пользователей: школы, учителя, ученики и вузы, которым может быть полезна цифровая лаборатория.',
+    'stats.title':'Проект понятен школе, ученику и жюри',
+    'stats.lead':'ChemLab TJ показывает практическую пользу без сложного оборудования: это демонстрационный инструмент для урока, домашнего повторения и презентации STEM-проекта.',
     'stats.cta':'Попробовать демо →',
     'sc.audience':'совокупная образовательная аудитория ChemLab TJ',
     'sc.pop':'население на 01.01.2026','sc.schools':'общеобразовательных учреждений',
     'sc.pupils':'учеников в школах','sc.teachers':'учителей',
     'sc.unis':'высших учебных заведений','sc.students':'студентов вузов',
-    'feat.label':'Для кого','feat.title':'Платформа для урока, подготовки и демонстрации',
-    'feat.lead':'Один инструмент — для разных задач: учитель объясняет, ученик исследует, школа без лаборатории показывает реакции, а класс тренирует выводы по наблюдениям.',
+    'feat.label':'Для кого','feat.title':'Одна демонстрация закрывает несколько учебных задач',
+    'feat.lead':'На главной странице видно идею проекта, в демо можно запустить опыт, а в расширенной лаборатории — собрать сценарий из посуды, реактивов и условий.',
     'f1.t':'Школьники 7–11 классов','f1.p':'Видят свойства веществ через визуальные опыты: осадок, газ, цвет раствора и итоговое уравнение без риска.',
     'f2.t':'Учителя химии','f2.p':'Быстро показывают процесс на экране: что смешали, что изменилось, какое уравнение получилось и какой вывод сделать.',
     'f3.t':'Школы без лаборатории','f3.p':'Получают наглядный инструмент для базовых реакций и правил безопасности даже при ограниченном оборудовании.',
@@ -581,7 +610,7 @@ const T = {
     'f5.t':'Олимпиадники и экзамены','f5.p':'Тренируют наблюдения, уравнения реакций и логику вывода в чистом понятном интерфейсе.',
     'f6.t':'Русский и таджикский','f6.p':'Интерфейс доступен на обоих языках. Переключается мгновенно без перезагрузки страницы.',
     'lab.label':'Цифровая лаборатория','lab.title':'Проведите реакцию прямо здесь',
-    'lab.lead':'Выберите реагенты и запустите реакцию — увидите результат, уравнение и наблюдение, как на реальном уроке химии.',
+    'lab.lead':'Быстрый режим для презентации: выберите реакцию, нажмите запуск и покажите наблюдение без перехода в сложный конструктор.',
     'lab.pick':'Выберите реакцию','lab.run':'⚡ Запустить реакцию',
     'lab.waiting':'Ожидание','lab.hint':'Выберите реакцию и нажмите кнопку',
     'why.label':'Почему это важно','why.title':'Цифровая симуляция помогает там, где обычный опыт провести сложно','why.lead':'ChemLab TJ не заменяет настоящую лабораторию полностью. Его задача — безопасно показать принцип реакции, наблюдение и уравнение до практической работы или вместо неё, если оборудования нет.','why.main.t':'Проблема урока химии','why.main.p':'Реактивы стоят денег, требуют хранения и контроля безопасности. Из-за этого часть опытов остаётся только в учебнике, хотя именно наблюдение осадка, газа и цвета помогает ученику понять химию.','why.r1.t':'Безопасная демонстрация','why.r1.p':'Можно показать реакцию без риска, запахов, ожогов и порчи реактивов.','why.r2.t':'Повторение дома','why.r2.p':'Ученик может снова пройти опыт и связать наблюдение с уравнением.','why.r3.t':'Полезно школам без кабинета','why.r3.p':'Даёт наглядность даже при ограниченном оборудовании.',
@@ -599,22 +628,22 @@ const T = {
     'nav.roadmap':'Рушд','nav.cta':'Кушодани озмоишгоҳ',
     'hero.badge':'Лоиҳаи STEM · Тоҷикистон 🇹🇯',
     'hero.h1a':'Озмоишгоҳи рақамии','hero.h1b':'химиявӣ',
-    'hero.sub':'ChemLab TJ — озмоишгоҳи рақамии химиявӣ барои мактабҳои Тоҷикистон: таҷрибаҳои бехатар, мушоҳидаҳои фаҳмо ва муодилаҳо бевосита дар браузер, бе насб.',
+    'hero.sub':'ChemLab TJ барои дарс ва муаррифӣ реаксияҳои химиявиро равшан нишон медиҳад: реагентҳо, эффект, муодила ва хулоса дар браузер.',
     'hero.cta1':'⚗️ Кушодани озмоишгоҳ','hero.cta2':'Дар бораи лоиҳа →',
-    'hero.s1':'хонандагон','hero.s2':'муаллимон','hero.s3':'аудиторияи ҳадаф',
+    'hero.s1':'хонандагон','hero.s2':'муаллимон','hero.s3':'таҷрибаи тайёр',
     'fc.audience':'Аудитория','fc.sub':'хонандагон ва муаллимон','fc.safe':'Бехатар','fc.browser':'дар браузер кор мекунад',
     'micro.label':'Модели таҷриба',
-    'trust.1':'Бе насб','trust.2':'Барои дарси химия','trust.3':'Интерфейси RU / TJ','trust.4':'Намоиши бехатар',
+    'trust.1':'Оғоз дар браузер','trust.2':'Барои дарс ва ҳимояи лоиҳа','trust.3':'Интерфейси RU / TJ','trust.4':'Намоиши бехатар',
     'stats.label':'Маориф · Тоҷикистон',
-    'stats.title':'Бозори воқеӣ, аудиторияи фаҳмо',
-    'stats.lead':'ChemLab TJ ба муҳити таълимии Тоҷикистон равона шудааст. Ин рақамҳо аудиторияи эҳтимолиро нишон медиҳанд, на шумораи кафолатноки истифодабарандагон: мактабҳо, омӯзгорон, хонандагон ва донишгоҳҳо.',
+    'stats.title':'Лоиҳа барои мактаб, хонанда ва ҳакамон фаҳмост',
+    'stats.lead':'ChemLab TJ фоидаи амалиро бе таҷҳизоти мураккаб нишон медиҳад: воситаи намоишӣ барои дарс, такрори хонагӣ ва муаррифии STEM.',
     'stats.cta':'Озмоишгоҳро санҷед →',
     'sc.audience':'аудиторияи умумии таълимии ChemLab TJ',
     'sc.pop':'аҳолӣ аз 01.01.2026','sc.schools':'муассисаҳои таълимии умумӣ',
     'sc.pupils':'хонандагони мактабҳо','sc.teachers':'муаллимон',
     'sc.unis':'муассисаҳои таълими олӣ','sc.students':'донишҷӯён',
-    'feat.label':'Барои кӣ','feat.title':'Платформа барои дарс, омодагӣ ва намоиш',
-    'feat.lead':'Як асбоб — барои вазифаҳои гуногун: омӯзгор шарҳ медиҳад, хонанда меомӯзад, мактаб бе озмоишгоҳ реаксияҳоро нишон медиҳад ва синф хулоса мебарорад.',
+    'feat.label':'Барои кӣ','feat.title':'Як намоиш чанд вазифаи таълимиро ҳал мекунад',
+    'feat.lead':'Дар саҳифаи асосӣ идеяи лоиҳа дида мешавад, дар демо таҷриба оғоз мешавад, дар озмоишгоҳи васеъ бошад сенария аз зарф, реактив ва шартҳо сохта мешавад.',
     'f1.t':'Хонандагони синфҳои 7–11','f1.p':'Хосиятҳои моддаҳоро тавассути таҷрибаҳои визуалӣ мебинанд: таҳшин, газ, ранги маҳлул ва муодилаи ниҳоӣ.',
     'f2.t':'Муаллимони химия','f2.p':'Равандро зуд дар экран нишон медиҳанд: чӣ омехта шуд, чӣ тағйир ёфт, кадом муодила ҳосил шуд ва чӣ хулоса бояд кард.',
     'f3.t':'Мактабҳо бе озмоишгоҳ','f3.p':'Барои реаксияҳои асосӣ ва қоидаҳои бехатарӣ воситаи намоён мегиранд, ҳатто агар таҷҳизот маҳдуд бошад.',
@@ -622,7 +651,7 @@ const T = {
     'f5.t':'Олимпиадачиён ва имтиҳонҳо','f5.p':'Мушоҳидаҳо, муодилаҳои реаксия ва мантиқи хулосаро дар интерфейси равшан тамрин мекунанд.',
     'f6.t':'Русӣ ва тоҷикӣ','f6.p':'Интерфейс бо ҳарду забон дастрас аст. Бидуни бозсозии саҳифа фавран иваз мешавад.',
     'lab.label':'Озмоишгоҳи рақамӣ','lab.title':'Реаксияро ҳозир ин ҷо гузаронед',
-    'lab.lead':'Реагентҳоро интихоб кунед ва реаксияро оғоз кунед — натиҷа, муодила ва мушоҳидаро мебинед, монанди дарси воқеии химия.',
+    'lab.lead':'Режими зуд барои муаррифӣ: реаксияро интихоб кунед, оғозро пахш кунед ва мушоҳидаро бе гузаштан ба конструктори мураккаб нишон диҳед.',
     'lab.pick':'Реаксияро интихоб кунед','lab.run':'⚡ Оғози реаксия',
     'lab.waiting':'Интизорӣ','lab.hint':'Реаксияро интихоб карда, тугмаро пахш кунед',
     'why.label':'Чаро муҳим аст','why.title':'Симулятсияи рақамӣ ёрӣ медиҳад, вақте таҷрибаи оддӣ душвор аст','why.lead':'ChemLab TJ озмоишгоҳи ҳақиқиро пурра иваз намекунад. Вазифааш — бехатар нишон додани принсипи реаксия, мушоҳида ва муодила пеш аз амалия ё ҳангоми набудани таҷҳизот.','why.main.t':'Мушкили дарси химия','why.main.p':'Реактивҳо хароҷот, нигоҳдорӣ ва назорати бехатарӣ талаб мекунанд. Аз ин сабаб баъзе таҷрибаҳо танҳо дар китоб мемонанд, ҳол он ки мушоҳидаи таҳшин, газ ва ранг барои фаҳмиш муҳим аст.','why.r1.t':'Намоиши бехатар','why.r1.p':'Реаксияро бе хавф, бӯй, сӯхтан ва талафи реактивҳо нишон додан мумкин аст.','why.r2.t':'Такрор дар хона','why.r2.p':'Хонанда метавонад таҷрибаро дубора гузарад ва мушоҳидаро бо муодила пайваст кунад.','why.r3.t':'Барои мактабҳои бе кабинет муфид','why.r3.p':'Ҳатто бо таҷҳизоти маҳдуд нагляднокӣ медиҳад.',
@@ -638,6 +667,32 @@ const T = {
 };
 
 let lang = 'ru';
+const themeToggle = document.getElementById('themeToggle');
+
+function updateThemeButton(theme){
+  if(!themeToggle) return;
+  const isLight = theme === 'light';
+  themeToggle.textContent = isLight ? '☾' : '☀';
+  themeToggle.setAttribute('aria-label', isLight ? 'Включить тёмную тему' : 'Включить светлую тему');
+  themeToggle.title = isLight ? 'Тёмная тема' : 'Светлая тема';
+}
+
+function setTheme(theme){
+  const next = theme === 'light' ? 'light' : 'dark';
+  document.documentElement.dataset.theme = next;
+  try { localStorage.setItem('chemlab-theme', next); } catch (error) {}
+  updateThemeButton(next);
+}
+
+function initTheme(){
+  let saved = 'dark';
+  try {
+    saved = localStorage.getItem('chemlab-theme') || (matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark');
+  } catch (error) {}
+  setTheme(saved);
+  themeToggle?.addEventListener('click', () => setTheme(document.documentElement.dataset.theme === 'light' ? 'dark' : 'light'));
+}
+
 function setLang(l){
   lang = l;
   document.getElementById('btnRU').classList.toggle('active', l==='ru');
@@ -653,6 +708,8 @@ function setLang(l){
   const lbl = document.getElementById('bLabel');
   lbl.textContent = l==='ru'?'Реакция завершена ✓':'Реаксия анҷом ёфт ✓';
 }
+
+initTheme();
 
 /* ════════════════════════════════
    REACTIONS

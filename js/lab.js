@@ -1314,6 +1314,8 @@
 
   function applyDemoTheme(theme) {
     const mode = theme === "light" ? "light" : "dark";
+    document.documentElement.classList.toggle("theme-light", mode === "light");
+    document.documentElement.classList.toggle("theme-dark", mode === "dark");
     document.body.classList.toggle("theme-light", mode === "light");
     document.body.classList.toggle("theme-dark", mode === "dark");
     const toggle = document.getElementById("demoThemeToggle");

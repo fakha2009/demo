@@ -3029,6 +3029,20 @@ body.theme-light .reagent-card {
   border-color: rgba(30, 88, 128, .14);
 }
 
+body.theme-light .equipment-dock {
+  background: linear-gradient(180deg, rgba(255, 255, 255, .96), rgba(244, 249, 252, .96));
+  border-top-color: rgba(30, 88, 128, .12);
+}
+
+body.theme-light .dock-tab.is-active {
+  color: #0f72b7;
+  background: rgba(15, 114, 183, .08);
+}
+
+body.theme-light .dock-item strong {
+  color: var(--text);
+}
+
 body.theme-light .dock-item small,
 body.theme-light .tool-section p,
 body.theme-light .experiment-panel p,
@@ -3078,6 +3092,101 @@ body.theme-light .progress-card span,
 body.theme-light #instructionPanel p,
 body.theme-light #instructionPanel li {
   color: var(--muted);
+}
+
+body.theme-light .study-layout {
+  color: var(--text);
+  background: linear-gradient(180deg, rgba(255, 255, 255, .92), rgba(242, 248, 252, .94));
+  border-color: rgba(30, 88, 128, .16);
+  box-shadow: 0 24px 70px rgba(31, 76, 110, .12);
+}
+
+body.theme-light .section-head h1,
+body.theme-light .element-card h2,
+body.theme-light .element-card h3,
+body.theme-light .reaction-card h2,
+body.theme-light .task-card h2,
+body.theme-light .handbook-card h2 {
+  color: var(--text);
+}
+
+body.theme-light .section-head p,
+body.theme-light .element-card p,
+body.theme-light .reaction-card p,
+body.theme-light .task-card p,
+body.theme-light .task-card details,
+body.theme-light .handbook-card p {
+  color: var(--muted);
+}
+
+body.theme-light .search-field {
+  color: var(--muted);
+}
+
+body.theme-light .search-field input,
+body.theme-light .tool-section textarea {
+  color: var(--text);
+  background: rgba(255, 255, 255, .78);
+  border-color: rgba(30, 88, 128, .16);
+}
+
+body.theme-light .filter-chip {
+  color: #17344d;
+  background: rgba(255, 255, 255, .70);
+  border-color: rgba(30, 88, 128, .18);
+}
+
+body.theme-light .filter-chip.is-active,
+body.theme-light .filter-chip:hover {
+  color: #fff;
+  background: linear-gradient(180deg, rgba(62, 124, 240, .92), rgba(47, 94, 176, .88));
+  border-color: rgba(47, 94, 176, .34);
+}
+
+body.theme-light .periodic-workspace,
+body.theme-light .reaction-catalog,
+body.theme-light .task-list,
+body.theme-light .handbook-grid {
+  color: var(--text);
+}
+
+body.theme-light .periodic-grid {
+  background:
+    radial-gradient(circle at 50% 0%, rgba(97, 162, 255, .10), transparent 36%),
+    rgba(255, 255, 255, .74);
+  border-color: rgba(30, 88, 128, .16);
+}
+
+body.theme-light .element-card,
+body.theme-light .reaction-card,
+body.theme-light .task-card,
+body.theme-light .handbook-card,
+body.theme-light .progress-card {
+  color: var(--text);
+  background: rgba(255, 255, 255, .78);
+  border-color: rgba(30, 88, 128, .16);
+  box-shadow: 0 16px 34px rgba(31, 76, 110, .10);
+}
+
+body.theme-light .reaction-card dl {
+  color: var(--text);
+}
+
+body.theme-light .reaction-card dt {
+  color: var(--muted);
+}
+
+body.theme-light .reaction-card dd,
+body.theme-light .info-grid strong,
+body.theme-light .measure-grid strong {
+  color: var(--text);
+}
+
+body.theme-light .info-grid span,
+body.theme-light .measure-grid span {
+  color: var(--muted);
+  background: rgba(16, 52, 78, .055);
+  border-color: rgba(30, 88, 128, .14);
 }
 
 .reagent-carbonate { background: linear-gradient(90deg, #e7e5e4, #fff7ed 48%, #fed7aa); }

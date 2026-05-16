@@ -14,10 +14,10 @@
 }
 
 .lab-brief {
+  display: none;
   width: min(100%, 1540px);
   margin: 14px auto 0;
   padding: 0 18px;
-  display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 10px;
 }
@@ -2941,6 +2941,143 @@ body[data-heat-state="heating_not_required"] .reaction-vessel .vessel-glass {
 
 .reagent-bottle span {
   font-weight: 900;
+}
+
+.reagent-pick,
+.dock-pick {
+  position: relative;
+}
+
+.reagent-pick {
+  display: grid;
+  justify-items: center;
+}
+
+.quick-add {
+  position: absolute;
+  z-index: 12;
+  width: 28px;
+  height: 28px;
+  min-height: 0;
+  padding: 0;
+  display: grid;
+  place-items: center;
+  border: 1px solid rgba(115, 214, 255, .42);
+  border-radius: 9px;
+  color: #06111f;
+  background: linear-gradient(135deg, var(--cyan), var(--green));
+  font-size: 18px;
+  font-weight: 950;
+  line-height: 1;
+  box-shadow: 0 10px 22px rgba(0, 0, 0, .24);
+}
+
+.reagent-pick .quick-add {
+  right: 0;
+  top: -12px;
+}
+
+.dock-add {
+  right: 8px;
+  top: 8px;
+}
+
+.quick-add:hover {
+  transform: translateY(-2px);
+  filter: brightness(1.05);
+}
+
+body.theme-light .tool-rail,
+body.theme-light .equipment-dock,
+body.theme-light .experiment-panel,
+body.theme-light .tool-drawer,
+body.theme-light .active-experiment,
+body.theme-light .progress-card,
+body.theme-light .result-card,
+body.theme-light .auth-panel {
+  background: rgba(255, 255, 255, .86);
+  border-color: rgba(30, 88, 128, .16);
+  box-shadow: 0 16px 44px rgba(31, 76, 110, .10);
+}
+
+body.theme-light .tool-button,
+body.theme-light .dock-tab,
+body.theme-light .secondary-action,
+body.theme-light .auth-panel input,
+body.theme-light .reagent-info,
+body.theme-light .measure-grid span,
+body.theme-light .heat-control-card,
+body.theme-light .note-list,
+body.theme-light .manual-note,
+body.theme-light textarea {
+  color: var(--text);
+  background: rgba(16, 52, 78, .055);
+  border-color: rgba(30, 88, 128, .14);
+}
+
+body.theme-light .tool-button.is-active,
+body.theme-light .tool-button:hover {
+  color: #fff;
+  background: linear-gradient(180deg, rgba(62, 124, 240, 0.92), rgba(47, 94, 176, 0.88));
+  border-color: rgba(47, 94, 176, .34);
+}
+
+body.theme-light .dock-item,
+body.theme-light .reagent-card {
+  color: var(--text);
+  background: rgba(255, 255, 255, .72);
+  border-color: rgba(30, 88, 128, .14);
+}
+
+body.theme-light .dock-item small,
+body.theme-light .tool-section p,
+body.theme-light .experiment-panel p,
+body.theme-light .auth-panel label,
+body.theme-light .auth-state small {
+  color: var(--muted);
+}
+
+body.theme-light .auth-panel input {
+  color: var(--text);
+}
+
+body.theme-light .tab,
+body.theme-light .prep-list span,
+body.theme-light .condition-row,
+body.theme-light .result-details,
+body.theme-light .result-message,
+body.theme-light .composition-box,
+body.theme-light .composition-list span {
+  color: var(--text);
+  background: rgba(255, 255, 255, .72);
+  border-color: rgba(30, 88, 128, .14);
+}
+
+body.theme-light .tab.is-active {
+  color: #0f72b7;
+  border-color: #0f72b7;
+  background: rgba(15, 114, 183, .08);
+}
+
+body.theme-light .equation,
+body.theme-light .condition-row strong,
+body.theme-light .result-details strong,
+body.theme-light .switch,
+body.theme-light .active-experiment strong,
+body.theme-light .progress-card strong,
+body.theme-light #instructionPanel h1,
+body.theme-light #instructionPanel strong {
+  color: var(--text);
+}
+
+body.theme-light .condition-row span,
+body.theme-light .result-details span,
+body.theme-light .composition-box > span,
+body.theme-light .active-experiment span,
+body.theme-light .progress-card span,
+body.theme-light #instructionPanel p,
+body.theme-light #instructionPanel li {
+  color: var(--muted);
 }
 
 .reagent-carbonate { background: linear-gradient(90deg, #e7e5e4, #fff7ed 48%, #fed7aa); }

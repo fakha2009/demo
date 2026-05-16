@@ -500,9 +500,16 @@
     node.addEventListener("dragend", () => node.classList.remove("is-dragging"));
   }
 
+  function quickAddItem(type, id) {
+    addWorkspaceItem({ type, id });
+    pulseNode(dom.dropzone);
+  }
+
   function renderShelfReagents() {
     dom.shelfReagents.innerHTML = "";
     window.ChemLabReactionData.reagents.forEach(reagent => {
+      const wrap = document.createElement("div");
+      wrap.className = "reagent-pick";
       const bottle = document.createElement("div");
       bottle.className = "reagent-bottle reagent-" + reagent.kind;
       bottle.dataset.reagentId = reagent.id;
@@ -511,7 +518,18 @@
       bottle.addEventListener("mouseenter", () => showReagentInfo(reagent));
       bottle.addEventListener("click", () => showReagentInfo(reagent));
       setupDraggable(bottle, "reagent", reagent.id);
-      dom.shelfReagents.appendChild(bottle);
+      const add = document.createElement("button");
+      add.type = "button";
+      add.className = "quick-add";
+      add.title = "Добавить на стол";
+      add.setAttribute("aria-label", "Добавить " + reagent.formula + " на стол");
+      add.textContent = "+";
+      add.addEventListener("click", event => {
+        event.stopPropagation();
+        quickAddItem("reagent", reagent.id);
+      });
+      wrap.append(bottle, add);
+      dom.shelfReagents.appendChild(wrap);
     });
   }
 
@@ -527,6 +545,8 @@
   function renderDock() {
     dom.equipmentDock.innerHTML = "";
     equipment.filter(item => item.category === uiState.activeDockCategory).forEach(item => {
+      const wrap = document.createElement("div");
+      wrap.className = "dock-pick";
       const button = document.createElement("button");
       button.type = "button";
       button.className = "dock-item";
@@ -534,7 +554,18 @@
       button.title = item.description;
       button.innerHTML = `<span class="item-icon ${item.icon}"></span><strong>${item.label}</strong><small>${item.description}</small>`;
       setupDraggable(button, "equipment", item.id);
-      dom.equipmentDock.appendChild(button);
+      const add = document.createElement("button");
+      add.type = "button";
+      add.className = "quick-add dock-add";
+      add.title = "Добавить на стол";
+      add.setAttribute("aria-label", "Добавить " + item.label + " на стол");
+      add.textContent = "+";
+      add.addEventListener("click", event => {
+        event.stopPropagation();
+        quickAddItem("equipment", item.id);
+      });
+      wrap.append(button, add);
+      dom.equipmentDock.appendChild(wrap);
     });
   }
 
@@ -1281,8 +1312,33 @@
     dom.freeMode?.addEventListener("click", () => setLabMode("free"));
   }
 
+  function applyDemoTheme(theme) {
+    const mode = theme === "light" ? "light" : "dark";
+    document.body.classList.toggle("theme-light", mode === "light");
+    document.body.classList.toggle("theme-dark", mode === "dark");
+    const toggle = document.getElementById("demoThemeToggle");
+    if (toggle) {
+      toggle.textContent = mode === "light" ? "☾" : "☀";
+      toggle.title = mode === "light" ? "Тёмная тема" : "Светлая тема";
+      toggle.setAttribute("aria-label", mode === "light" ? "Включить тёмную тему" : "Включить светлую тему");
+    }
+    try { localStorage.setItem("chemlab-demo-theme", mode); } catch (error) {}
+  }
+
+  function setupDemoTheme() {
+    let saved = "dark";
+    try {
+      saved = localStorage.getItem("chemlab-demo-theme") || (matchMedia("(prefers-color-scheme: light)").matches ? "light" : "dark");
+    } catch (error) {}
+    applyDemoTheme(saved);
+    document.getElementById("demoThemeToggle")?.addEventListener("click", () => {
+      applyDemoTheme(document.body.classList.contains("theme-light") ? "dark" : "light");
+    });
+  }
+
   async function init() {
     cacheDom();
+    setupDemoTheme();
     await loadApiData();
     ingestConstructorProducts();
     engine = window.ChemLabReactions.createReactionEngine(window.ChemLabReactionData.reactions);

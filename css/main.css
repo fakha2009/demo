@@ -18,6 +18,19 @@
   --radius: 8px;
 }
 
+body.theme-light {
+  --bg: #eef6fb;
+  --bg-2: #f7fbff;
+  --panel: rgba(255, 255, 255, 0.86);
+  --panel-soft: rgba(8, 33, 52, 0.055);
+  --line: rgba(30, 88, 128, 0.16);
+  --line-strong: rgba(0, 126, 180, 0.36);
+  --text: #102235;
+  --muted: #51697f;
+  --dim: #6c8194;
+  --shadow: rgba(31, 76, 110, 0.14);
+}
+
 * {
   box-sizing: border-box;
 }
@@ -36,6 +49,13 @@ body {
   background:
     radial-gradient(circle at 25% -10%, rgba(61, 122, 240, 0.24), transparent 30%),
     linear-gradient(180deg, #111820 0%, #0b1017 52%, #080c11 100%);
+}
+
+body.theme-light {
+  background:
+    radial-gradient(circle at 18% 0%, rgba(71, 217, 255, 0.15), transparent 28%),
+    radial-gradient(circle at 88% 12%, rgba(61, 122, 240, 0.10), transparent 28%),
+    linear-gradient(180deg, #f7fbff, #eef6fb 56%, #f8fbfd);
 }
 
 a {
@@ -68,6 +88,11 @@ button {
   backdrop-filter: blur(16px);
 }
 
+body.theme-light .topbar {
+  background: rgba(255, 255, 255, 0.86);
+  box-shadow: 0 10px 34px rgba(31, 76, 110, 0.08);
+}
+
 .brand {
   display: inline-flex;
   align-items: center;
@@ -94,6 +119,31 @@ button {
   font-size: 14px;
   font-weight: 700;
   color: #d7e1f0;
+}
+
+body.theme-light .main-nav {
+  color: #60758a;
+}
+
+body.theme-light .main-nav a:hover,
+body.theme-light .main-nav a.is-active {
+  color: #102235;
+}
+
+.theme-toggle {
+  width: 36px;
+  height: 34px;
+  display: inline-grid;
+  place-items: center;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  color: var(--text);
+  background: var(--panel-soft);
+  font-weight: 900;
+}
+
+.theme-toggle:hover {
+  border-color: var(--line-strong);
 }
 
 .main-nav a {

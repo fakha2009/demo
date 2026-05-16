@@ -2,7 +2,7 @@ import { mkdir, readFile, writeFile } from "node:fs/promises";
 
 await loadDotEnv(".env");
 
-const apiBaseUrl = normalizeApiBaseUrl(process.env.CHEMLAB_API_URL || process.env.VITE_API_BASE_URL || "http://localhost:8080/api");
+const apiBaseUrl = normalizeApiBaseUrl(process.env.CHEMLAB_API_URL || process.env.VITE_API_BASE_URL || "/api");
 
 await mkdir("js", { recursive: true });
 await writeFile(

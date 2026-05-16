@@ -205,7 +205,145 @@ async function oneReaction(req, res, id, activeOnly) {
 
 function normalizeReaction(row) {
   const data = row.data || {};
-  return { ...data, ...row, reactants: [row.reactant_a_id, row.reactant_b_id].filter(Boolean), visualEffect: data.visualEffect || data.visual_effect || row.visual_effect };
+  const ru = russianReaction(row.id);
+  const reactants = ru.reactants || data.reactants || [row.reactant_a_id, row.reactant_b_id].filter(Boolean);
+  const products = ru.products || data.products || row.products || [];
+  return {
+    ...data,
+    ...row,
+    ...ru,
+    data: { ...data, ...ru },
+    reactants,
+    products,
+    visualEffect: ru.visualEffect || data.visualEffect || data.visual_effect || row.visual_effect
+  };
+}
+
+function russianReaction(id) {
+  return {
+    agno3_nacl: {
+      name: "Осаждение хлорида серебра",
+      title: "Осаждение хлорида серебра",
+      type: "осаждение",
+      expectedEffect: "белый осадок AgCl",
+      products: ["AgCl", "NaNO3"],
+      observation: "Раствор мутнеет, на дне появляется белый осадок.",
+      explanation: "Ионы Ag+ и Cl- образуют малорастворимый хлорид серебра.",
+      safetyNote: "Соли серебра оставляют пятна, работайте аккуратно.",
+      message: "Образовался белый осадок AgCl."
+    },
+    hcl_nahco3: {
+      name: "Кислота и гидрокарбонат: выделение газа",
+      title: "Кислота и гидрокарбонат: выделение газа",
+      type: "выделение газа",
+      expectedEffect: "пузырьки CO2",
+      products: ["NaCl", "CO2", "H2O"],
+      observation: "В сосуде появляются пузырьки CO2.",
+      explanation: "Кислота реагирует с гидрокарбонатом с образованием соли, воды и углекислого газа.",
+      safetyNote: "Не закрывайте сосуд герметично при выделении газа.",
+      message: "Выделяется углекислый газ."
+    },
+    cuso4_naoh: {
+      name: "Осаждение гидроксида меди(II)",
+      title: "Осаждение гидроксида меди(II)",
+      type: "осаждение",
+      expectedEffect: "голубой осадок Cu(OH)2",
+      products: ["Cu(OH)2", "Na2SO4"],
+      observation: "Появляется голубой студенистый осадок.",
+      explanation: "Ионы Cu2+ соединяются с OH- и образуют малорастворимый Cu(OH)2.",
+      safetyNote: "Растворы солей меди не пробуйте на вкус и не допускайте попадания на кожу.",
+      message: "Образовался голубой осадок гидроксида меди(II)."
+    },
+    fecl3_naoh: {
+      name: "Осаждение гидроксида железа(III)",
+      title: "Осаждение гидроксида железа(III)",
+      type: "осаждение",
+      expectedEffect: "бурый осадок Fe(OH)3",
+      products: ["Fe(OH)3", "NaCl"],
+      observation: "В растворе появляется бурый осадок.",
+      explanation: "Ионы Fe3+ и OH- образуют малорастворимый гидроксид железа(III).",
+      safetyNote: "Работайте аккуратно, избегайте разбрызгивания.",
+      message: "Образовался бурый осадок гидроксида железа(III)."
+    },
+    h2o_heat: {
+      name: "Нагревание воды до пара",
+      title: "Нагревание воды до пара",
+      type: "нагревание",
+      expectedEffect: "лёгкий пар над сосудом",
+      reactants: ["H2O"],
+      products: ["H2O(пар)"],
+      observation: "Над сосудом появляется пар.",
+      explanation: "При нагревании вода переходит из жидкого состояния в газообразное; новое вещество не образуется.",
+      safetyNote: "Используйте слабый нагрев и не нагревайте закрытый сосуд.",
+      message: "Вода нагревается и испаряется."
+    },
+    caco3_hcl: {
+      name: "Получение углекислого газа",
+      title: "Получение углекислого газа",
+      type: "выделение газа",
+      expectedEffect: "пузырьки CO2 и газоотвод",
+      products: ["CaCl2", "CO2", "H2O"],
+      observation: "В сосуде появляются пузырьки, газ отводится через трубку.",
+      explanation: "Карбонат кальция реагирует с кислотой: образуются соль, вода и углекислый газ.",
+      safetyNote: "Кислоту добавляйте малыми порциями, газоотвод не направляйте к лицу.",
+      message: "Реакция прошла успешно: выделяется CO2."
+    },
+    h2o_o2_heat: {
+      name: "Нагревание воды до пара",
+      title: "Нагревание воды до пара",
+      type: "нагревание",
+      expectedEffect: "лёгкий пар над сосудом",
+      products: ["H2O(пар)"],
+      observation: "Над сосудом появляется пар.",
+      explanation: "При нагревании вода переходит из жидкого состояния в газообразное.",
+      safetyNote: "Осторожно: горячий пар может обжечь.",
+      message: "Вода нагревается и испаряется."
+    },
+    bacl2_na2so4: {
+      name: "Осаждение сульфата бария",
+      title: "Осаждение сульфата бария",
+      type: "осаждение",
+      expectedEffect: "белый осадок BaSO4",
+      products: ["BaSO4", "NaCl"],
+      observation: "Появляется мелкий белый осадок.",
+      explanation: "Ионы Ba2+ и SO4 2- образуют нерастворимый сульфат бария.",
+      safetyNote: "Соли бария токсичны; опыт только виртуальный.",
+      message: "Образовался белый осадок сульфата бария."
+    },
+    pbno3_ki: {
+      name: "Жёлтый осадок йодида свинца",
+      title: "Жёлтый осадок йодида свинца",
+      type: "осаждение",
+      expectedEffect: "жёлтый осадок PbI2",
+      products: ["PbI2", "KNO3"],
+      observation: "Раствор быстро мутнеет, появляется жёлтый осадок.",
+      explanation: "Ионы Pb2+ и I- образуют малорастворимый PbI2.",
+      safetyNote: "Соли свинца токсичны. Это виртуальная демонстрация.",
+      message: "Образовался ярко-жёлтый осадок йодида свинца."
+    },
+    nh4cl_naoh: {
+      name: "Получение аммиака при нагревании",
+      title: "Получение аммиака при нагревании",
+      type: "выделение газа",
+      expectedEffect: "газ NH3",
+      products: ["NH3", "NaCl", "H2O"],
+      observation: "Над сосудом появляется подпись NH3.",
+      explanation: "Щёлочь вытесняет аммиак из соли аммония при нагревании.",
+      safetyNote: "Виртуально. Аммиак раздражает дыхательные пути.",
+      message: "При нагревании выделяется аммиак."
+    },
+    cu_agno3: {
+      name: "Медь и нитрат серебра",
+      title: "Медь и нитрат серебра",
+      type: "замещение",
+      expectedEffect: "серебристый налёт и голубой раствор",
+      products: ["Cu(NO3)2", "Ag"],
+      observation: "Появляется серебристый налёт, жидкость приобретает голубой оттенок.",
+      explanation: "Медь вытесняет серебро из раствора нитрата серебра.",
+      safetyNote: "Нитрат серебра оставляет пятна; опыт виртуальный.",
+      message: "Серебро выделяется на меди, раствор становится голубым."
+    }
+  }[id] || {};
 }
 
 async function listSubstances(req, res, activeOnly) {

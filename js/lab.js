@@ -224,30 +224,32 @@
       ]);
       if (Array.isArray(reactionPayload.reactions) && reactionPayload.reactions.length) {
         window.ChemLabReactionData.reactionRules = reactionPayload.reactions.map(function (reaction) {
+          const local = localReactionById(reaction.id) || {};
           return {
             id: reaction.id,
-            name: reaction.name || reaction.title,
-            title: reaction.title || reaction.name,
-            reactants: reaction.reactants || [reaction.reactant_a_id, reaction.reactant_b_id].filter(Boolean),
-            equation: reaction.equation,
-            type: window.ChemLabI18n?.label ? window.ChemLabI18n.label("reactionType", reaction.type) : reaction.type,
-            filters: reaction.filters || [reaction.type],
-            expectedEffect: reaction.has_gas ? "выделение газа" : reaction.has_precipitate ? "образование осадка" : "изменение в сосуде",
-            products: reaction.products || [],
-            requiredEquipment: reaction.requiredEquipment || reaction.required_equipment || [],
+            name: local.name || reaction.name || reaction.title,
+            title: local.title || local.name || reaction.title || reaction.name,
+            reactants: local.reactants || reaction.reactants || [reaction.reactant_a_id, reaction.reactant_b_id].filter(Boolean),
+            equation: local.equation || reaction.equation,
+            type: local.type || (window.ChemLabI18n?.label ? window.ChemLabI18n.label("reactionType", reaction.type) : reaction.type),
+            filters: local.filters || reaction.filters || [reaction.type],
+            expectedEffect: local.expectedEffect || (reaction.has_gas ? "выделение газа" : reaction.has_precipitate ? "образование осадка" : "изменение в сосуде"),
+            products: local.products || reaction.products || [],
+            requiredEquipment: local.requiredEquipment || reaction.requiredEquipment || reaction.required_equipment || [],
             requiresHeating: Boolean(reaction.requiresHeating || reaction.requires_heating),
-            allowedContainers: reaction.allowedContainers || ["test-tube", "erlenmeyer", "beaker", "reaction-vessel"],
-            effect: reaction.has_gas ? "gas" : reaction.has_precipitate ? "precipitate" : reaction.has_smoke ? "steam" : "colorChange",
-            visualEffect: reaction.visualEffect || reaction.visual_effect || {
+            allowedContainers: local.allowedContainers || reaction.allowedContainers || ["test-tube", "erlenmeyer", "beaker", "reaction-vessel"],
+            effect: local.effect || (reaction.has_gas ? "gas" : reaction.has_precipitate ? "precipitate" : reaction.has_smoke ? "steam" : "colorChange"),
+            visualEffect: local.visualEffect || reaction.visualEffect || reaction.visual_effect || {
               type: reaction.has_gas ? "gas" : reaction.has_precipitate ? "precipitate" : reaction.has_smoke ? "steam" : "colorChange",
               gas: reaction.gas_name || reaction.gas_label,
               precipitateColor: reaction.precipitate_color,
               liquidColor: reaction.liquid_color_after || reaction.liquidColor
             },
-            liquidColor: reaction.liquid_color_after || reaction.liquidColor || reaction.liquid_color || "clear",
-            observation: reaction.observation,
-            explanation: reaction.explanation,
-            safetyNote: reaction.safety || reaction.safetyNote || reaction.safety_note
+            liquidColor: local.liquidColor || reaction.liquid_color_after || reaction.liquidColor || reaction.liquid_color || "clear",
+            message: local.message || reaction.message,
+            observation: local.observation || reaction.observation,
+            explanation: local.explanation || reaction.explanation,
+            safetyNote: local.safetyNote || reaction.safety || reaction.safetyNote || reaction.safety_note
           };
         });
         window.ChemLabReactionData.reactions = window.ChemLabReactionData.reactionRules;
@@ -306,6 +308,10 @@
   function equipmentLabel(id) { return equipment.find(item => item.id === id)?.label || id; }
   function equipmentById(id) { return equipment.find(item => item.id === id); }
   function reactionById(id) { return window.ChemLabReactionData.reactions.find(item => item.id === id); }
+  function localReactionById(id) {
+    const aliases = { h2o_heat: "h2o_o2_heat" };
+    return window.ChemLabReactionData.reactionRules.find(item => item.id === id || item.id === aliases[id]);
+  }
   function activeReaction() { return reactionById(labState.activeReactionId) || window.ChemLabReactionData.reactions[0]; }
   function getReactionCandidate() { return labState.reagents.length >= 2 ? engine.find(labState.reagents.slice(0, 2)) : null; }
   function reactionNeedsHeat() { const candidate = getReactionCandidate() || activeReaction(); return Boolean(candidate && candidate.requiresHeating); }
@@ -1174,7 +1180,7 @@
   }
 
   function renderUserAuth(user) {
-    const label = user?.name || user?.email || "User";
+    const label = user?.name || user?.email || "Пользователь";
     if (dom.authUserName) dom.authUserName.textContent = label;
     if (dom.authAvatar) dom.authAvatar.textContent = String(label).slice(0, 1).toUpperCase();
     if (dom.authUserEmail) dom.authUserEmail.textContent = user?.email || label;

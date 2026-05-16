@@ -3,7 +3,7 @@
 
   const api = window.ChemLabApiClient;
   const t = window.ChemLabI18n.label;
-  const state = { substances: [], reactions: [], elements: [], tasks: [], handbook: [], editing: null };
+  const state = { substances: [], reactions: [], elements: [], tasks: [], handbook: [], constructor: { ions: [], rules: [], products: [], solubility: [] }, editing: null };
 
   const login = document.getElementById("adminLogin");
   const shell = document.getElementById("adminShell");
@@ -86,7 +86,7 @@
   }
 
   async function loadAll() {
-    const [dashboard, users, reactions, substances, elements, experiments, tasks, handbook] = await Promise.all([
+    const [dashboard, users, reactions, substances, elements, experiments, tasks, handbook, constructorIons, constructorRules, constructorProducts, solubilityRules] = await Promise.all([
       api.get("/admin/dashboard"),
       api.get("/admin/users"),
       api.get("/admin/reactions"),
@@ -94,13 +94,23 @@
       api.get("/admin/periodic-elements"),
       api.get("/admin/experiments"),
       api.get("/admin/tasks"),
-      api.get("/admin/handbook")
+      api.get("/admin/handbook"),
+      api.get("/admin/constructor/ions").catch(() => ({ ions: [] })),
+      api.get("/admin/constructor/element-rules").catch(() => ({ rules: [] })),
+      api.get("/admin/constructor/products").catch(() => ({ products: [] })),
+      api.get("/admin/constructor/solubility").catch(() => ({ rules: [] }))
     ]);
     state.reactions = reactions.reactions || [];
     state.substances = substances.substances || [];
     state.elements = elements.elements || [];
     state.tasks = tasks.tasks || [];
     state.handbook = handbook.entries || [];
+    state.constructor = {
+      ions: constructorIons.ions || [],
+      rules: constructorRules.rules || [],
+      products: constructorProducts.products || [],
+      solubility: solubilityRules.rules || []
+    };
     renderDashboard(dashboard);
     renderUsers(users.users || []);
     renderReactions();
@@ -117,7 +127,8 @@
       ["Пользователи", data.totalUsers],
       ["Реакции", data.totalReactions],
       ["Вещества", data.totalSubstances],
-      ["Проведённые опыты", data.totalExperiments]
+      ["Проведённые опыты", data.totalExperiments],
+      ["Созданные продукты", data.createdProducts || 0]
     ];
     const root = document.getElementById("dashboardStats");
     root.textContent = "";
@@ -141,6 +152,12 @@
       { label: "Результат", value: "result" },
       { label: "Дата", value: (r) => formatDate(r.created_at) }
     ], data.recentExperiments || []);
+    if (document.getElementById("popularReactionsTable")) {
+      table("popularReactionsTable", [
+        { label: "Реакция", value: "reaction_id" },
+        { label: "Запуски", value: "attempts" }
+      ], data.popularReactions || []);
+    }
   }
 
   function renderUsers(users) {
@@ -244,6 +261,128 @@
   }
 
   function renderConstructor() {
+    const root = document.getElementById("constructorForm");
+    if (!root) return;
+    root.innerHTML = `
+      <div class="admin-grid">
+        <article class="admin-card">
+          <h2>Ионы</h2>
+          <form class="admin-form" id="constructorIonForm">
+            <div class="form-grid">
+              <input name="id" placeholder="id: ca_2plus" required>
+              <input name="symbol" placeholder="Ca2+" required>
+              <input name="name_ru" placeholder="Ион кальция">
+              <input name="charge" type="number" placeholder="2" required>
+              <select name="type"><option value="cation">cation</option><option value="anion">anion</option></select>
+              <input name="formula_part" placeholder="Ca">
+              <input name="color" placeholder="#f1f5f9">
+            </div>
+            <textarea name="description_ru" placeholder="Описание для ученика"></textarea>
+            <button class="btn-admin" type="submit">Добавить ион</button>
+          </form>
+          <div class="table-wrap"><table class="admin-table" id="constructorIonsTable"></table></div>
+        </article>
+        <article class="admin-card">
+          <h2>Правила синтеза</h2>
+          <form class="admin-form" id="constructorRuleForm">
+            <div class="form-grid">
+              <input name="reactant_a" placeholder="na" required>
+              <input name="reactant_b" placeholder="cl2" required>
+              <input name="equation" placeholder="2Na + Cl2 -> 2NaCl" required>
+              <input name="product_formula" placeholder="NaCl" required>
+              <input name="product_name_ru" placeholder="Хлорид натрия">
+              <input name="product_type" placeholder="salt">
+              <input name="product_state" placeholder="solid">
+            </div>
+            <textarea name="explanation_ru" placeholder="Научное объяснение"></textarea>
+            <textarea name="safety_ru" placeholder="Безопасность"></textarea>
+            <button class="btn-admin" type="submit">Добавить правило</button>
+          </form>
+          <div class="table-wrap"><table class="admin-table" id="constructorRulesTable"></table></div>
+        </article>
+        <article class="admin-card">
+          <h2>Таблица растворимости</h2>
+          <form class="admin-form" id="solubilityForm">
+            <div class="form-grid">
+              <input name="compound_formula" placeholder="AgCl" required>
+              <select name="kind"><option value="soluble">soluble</option><option value="precipitate">precipitate</option><option value="water">water</option><option value="gas">gas</option><option value="unknown">unknown</option></select>
+              <input name="precipitate_color" placeholder="white">
+              <label><input type="checkbox" name="soluble"> Растворимо</label>
+            </div>
+            <textarea name="note_ru" placeholder="Примечание"></textarea>
+            <button class="btn-admin" type="submit">Сохранить растворимость</button>
+          </form>
+          <div class="table-wrap"><table class="admin-table" id="solubilityTable"></table></div>
+        </article>
+        <article class="admin-card">
+          <h2>Продукты пользователей</h2>
+          <div class="table-wrap"><table class="admin-table" id="constructorProductsTable"></table></div>
+        </article>
+      </div>
+    `;
+    bindConstructorForms();
+    table("constructorIonsTable", [
+      { label: "Символ", value: "symbol" },
+      { label: "Название", value: "name_ru" },
+      { label: "Заряд", value: "charge" },
+      { label: "Тип", value: "type" },
+      { label: "Часть формулы", value: "formula_part" },
+      { label: "Действия", value: (r) => actions([{ label: "Удалить", danger: true, onClick: () => remove("constructor/ions", r.id) }]) }
+    ], state.constructor.ions);
+    table("constructorRulesTable", [
+      { label: "Реактивы", value: (r) => `${r.reactant_a} + ${r.reactant_b}` },
+      { label: "Уравнение", value: "equation" },
+      { label: "Продукт", value: "product_formula" },
+      { label: "Статус", value: (r) => status(r.enabled) },
+      { label: "Действия", value: (r) => actions([
+        { label: r.enabled ? "Выключить" : "Включить", onClick: () => toggle("constructor/element-rules", r.id) },
+        { label: "Удалить", danger: true, onClick: () => remove("constructor/element-rules", r.id) }
+      ]) }
+    ], state.constructor.rules);
+    table("solubilityTable", [
+      { label: "Формула", value: "compound_formula" },
+      { label: "Тип", value: "kind" },
+      { label: "Растворимо", value: (r) => r.soluble ? "да" : "нет" },
+      { label: "Осадок", value: "precipitate_color" },
+      { label: "Действия", value: (r) => actions([{ label: "Удалить", danger: true, onClick: () => remove("constructor/solubility", r.compound_formula) }]) }
+    ], state.constructor.solubility);
+    table("constructorProductsTable", [
+      { label: "Формула", value: "formula" },
+      { label: "Название", value: "name_ru" },
+      { label: "Источник", value: "source_mode" },
+      { label: "Уравнение", value: "source_equation" },
+      { label: "Дата", value: (r) => formatDate(r.created_at) },
+      { label: "Действия", value: (r) => actions([{ label: "Удалить", danger: true, onClick: () => remove("constructor/products", r.id) }]) }
+    ], state.constructor.products);
+  }
+
+  function bindConstructorForms() {
+    document.getElementById("constructorIonForm").onsubmit = async (event) => {
+      event.preventDefault();
+      const body = Object.fromEntries(new FormData(event.currentTarget).entries());
+      body.charge = Number(body.charge || 0);
+      body.common = true;
+      await api.post("/admin/constructor/ions", body);
+      await loadAll();
+    };
+    document.getElementById("constructorRuleForm").onsubmit = async (event) => {
+      event.preventDefault();
+      const body = Object.fromEntries(new FormData(event.currentTarget).entries());
+      body.enabled = true;
+      await api.post("/admin/constructor/element-rules", body);
+      await loadAll();
+    };
+    document.getElementById("solubilityForm").onsubmit = async (event) => {
+      event.preventDefault();
+      const form = new FormData(event.currentTarget);
+      const body = Object.fromEntries(form.entries());
+      body.soluble = form.has("soluble");
+      await api.post("/admin/constructor/solubility", body);
+      await loadAll();
+    };
+  }
+
+  function renderLegacyConstructor() {
     const form = document.getElementById("constructorForm");
     if (!form) return;
     form.innerHTML = `

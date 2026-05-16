@@ -173,6 +173,28 @@
     if (text) text.textContent = label;
   }
 
+  function ingestConstructorProducts() {
+    let products = [];
+    try {
+      products = JSON.parse(localStorage.getItem("chemlab_constructor_products") || "[]");
+    } catch (error) {
+      products = [];
+    }
+    products.forEach(function (product) {
+      if (!product || !product.id || reagentById(product.id)) return;
+      window.ChemLabReactionData.reagents.push({
+        id: product.id,
+        name: product.name || product.id,
+        formula: product.formula || product.id,
+        kind: product.type || "synthesized",
+        category: "Созданные",
+        state: product.state || "solution",
+        role: product.description || "Создано в конструкторе реакций",
+        color: product.color || "#e0f2fe"
+      });
+    });
+  }
+
   function updateDebugStatus() {
     if (!dom.debugStatus) return;
     const auth = window.ChemLabAPI?.hasToken && window.ChemLabAPI.hasToken();
@@ -623,39 +645,13 @@
     const reagentLabels = labState.reagents.map(id => reagentById(id)?.formula || id);
     const canRun = Boolean(labState.container && labState.reagents.length >= 2);
     const candidate = getReactionCandidate();
-    const guideReaction = candidate || activeReaction();
     const heatRequired = Boolean((candidate || activeReaction()).requiresHeating);
     const heatReady = !heatRequired || labState.heaterEnabled;
     const experimentReady = canRun && heatReady;
-    const missingReagents = guideReaction.reactants.filter(id => !labState.reagents.includes(id));
-    const missingEquipment = guideReaction.requiredEquipment.filter(function (id) {
-      const eq = equipmentById(id);
-      return eq && !eq.isContainer && !labState.equipment.includes(id);
-    });
-    let nextStepKey = "check";
-    let nextStepText = "Можно проверять результат.";
-    if (!labState.container) {
-      const targetContainer = guideReaction.requiredEquipment.map(equipmentById).find(item => item?.isContainer)
-        || guideReaction.allowedContainers.map(equipmentById).find(item => item?.isContainer);
-      nextStepKey = "container";
-      nextStepText = "Выберите сосуд" + (targetContainer ? ": " + targetContainer.label : "") + ".";
-    } else if (missingReagents.length) {
-      nextStepKey = "reagents";
-      nextStepText = "Добавьте реактивы: " + missingReagents.join(" + ") + ".";
-    } else if (missingEquipment.length) {
-      nextStepKey = missingEquipment.some(id => equipmentById(id)?.isHeater) ? "heater" : "tools";
-      nextStepText = "Добавьте оборудование: " + missingEquipment.map(equipmentLabel).join(", ") + ".";
-    } else if (guideReaction.requiresHeating && !labState.heaterEnabled) {
-      nextStepKey = labState.heaterPlaced ? "heat-on" : "heater";
-      nextStepText = labState.heaterPlaced ? "Включите нагрев перед проверкой." : "Добавьте нагреватель и включите его.";
-    }
-    document.body.dataset.labNextStep = nextStepKey;
-    if (dom.dropzone) dom.dropzone.dataset.nextStep = nextStepKey;
-    if (dom.nextStepHint) dom.nextStepHint.textContent = nextStepText;
     dom.selectedReagents.textContent = reagentLabels.length ? reagentLabels.join(" + ") : "нет реактивов";
     dom.containerName.textContent = labState.container ? labState.container.label : "не выбран";
     if (!heatRequired) {
-      dom.heatStatus.textContent = "не требуется";
+      dom.heatStatus.textContent = labState.heaterEnabled ? "включён, не требуется" : "не требуется";
     } else if (!labState.heaterPlaced) {
       dom.heatStatus.textContent = "требуется: добавьте нагреватель";
     } else if (!labState.container) {
@@ -694,32 +690,6 @@
       });
     }
     updateHeatingUi();
-  }
-
-  function addWorkspaceItemIfNeeded(type, id) {
-    if (type === "reagent" && labState.reagents.includes(id)) return;
-    if (type === "equipment" && labState.equipment.includes(id)) return;
-    addWorkspaceItem({ type, id });
-  }
-
-  function quickStartLab() {
-    const reaction = activeReaction();
-    resetLab();
-    const preferredContainer = reaction.requiredEquipment.map(equipmentById).find(item => item?.isContainer)
-      || reaction.allowedContainers.map(equipmentById).find(item => item?.isContainer)
-      || equipmentById("beaker");
-    if (preferredContainer) addWorkspaceItemIfNeeded("equipment", preferredContainer.id);
-    reaction.requiredEquipment.forEach(function (id) {
-      const eq = equipmentById(id);
-      if (eq && !eq.isContainer) addWorkspaceItemIfNeeded("equipment", id);
-    });
-    reaction.reactants.forEach(id => addWorkspaceItemIfNeeded("reagent", id));
-    if (reaction.requiresHeating && !labState.heaterPlaced) addWorkspaceItemIfNeeded("equipment", "burner-tool");
-    if (reaction.requiresHeating) updateHeating(true);
-    setActiveTab(reaction.requiresHeating ? "conditions" : "result");
-    setResultMessage("Опыт собран для сценария: " + reaction.name + ". Проверьте результат и сравните наблюдение с уравнением.", "info");
-    addNote("быстрый старт: опыт собран автоматически");
-    updateLabStatePanel();
   }
 
   function updateMeasurements() {
@@ -762,17 +732,6 @@
       updateHeatingUi();
       return;
     }
-    if (enabled && !currentReactionRequiresHeating()) {
-      labState.heaterEnabled = false;
-      syncHeatingAlias();
-      dom.heatCheckbox.checked = false;
-      document.body.classList.remove("is-heating");
-      dom.reactionVessel.classList.remove("heated");
-      setResultMessage("Для текущего опыта нагрев не требуется. Нагреватель может стоять как лишний инструмент, но не влияет на результат.", "warning");
-      updateHeatingUi();
-      updateLabStatePanel();
-      return;
-    }
     labState.heaterEnabled = Boolean(enabled);
     syncHeatingAlias();
     labState.heatLevel = labState.heaterEnabled ? Math.max(1, Number(dom.heatLevel?.value || 2)) : 0;
@@ -788,17 +747,14 @@
 
   function updateHeatingUi() {
     const heatRequired = currentReactionRequiresHeating();
-    if (dom.heatSwitchRow) dom.heatSwitchRow.hidden = !heatRequired;
-    if (dom.heatLevel) dom.heatLevel.disabled = !heatRequired || !labState.heaterPlaced || !labState.container;
+    if (dom.heatSwitchRow) dom.heatSwitchRow.hidden = false;
+    if (dom.heatLevel) dom.heatLevel.disabled = !labState.heaterPlaced || !labState.container;
     if (dom.heatModeText) {
-      dom.heatModeText.textContent = !heatRequired ? "Нагрев не требуется" : labState.heaterEnabled ? "Нагрев включён" : "Нагрев выключен";
+      dom.heatModeText.textContent = !heatRequired && labState.heaterEnabled ? "Нагрев включён, но не требуется" : !heatRequired ? "Нагрев не требуется" : labState.heaterEnabled ? "Нагрев включён" : "Нагрев выключен";
     }
     if (dom.heatDot) dom.heatDot.classList.toggle("is-on", labState.heaterEnabled);
     if (dom.drawerHeatToggle) {
-      if (!heatRequired) {
-        dom.drawerHeatToggle.textContent = "Не требуется";
-        dom.drawerHeatToggle.disabled = true;
-      } else if (!labState.heaterPlaced) {
+      if (!labState.heaterPlaced) {
         dom.drawerHeatToggle.textContent = "Добавьте нагреватель";
         dom.drawerHeatToggle.disabled = true;
       } else if (!labState.container) {
@@ -1164,7 +1120,6 @@
       updateHeatingUi();
     });
     dom.checkReaction.addEventListener("click", checkReaction);
-    dom.quickStartLab?.addEventListener("click", quickStartLab);
     get("resetLab").addEventListener("click", resetLab);
     dom.addNote.addEventListener("click", () => {
       addNote(dom.manualNote.value.trim());
@@ -1178,7 +1133,7 @@
 
   function cacheDom() {
     [
-      "backendStatus", "debugStatus", "guidedMode", "freeMode", "authWidget", "authToggle", "authPanel", "authUserPanel", "authForms", "authUserName", "authAvatar", "authUserEmail", "authLogout", "loginForm", "loginEmail", "loginPassword", "registerForm", "registerName", "registerEmail", "registerPassword", "authSwitch", "authMessage", "progressSummary", "progressCompleted", "progressLast", "shelfReagents", "equipmentDock", "wallPeriodicGrid", "benchDropzone", "workspaceItems", "reactionVessel", "bubbles", "gasHaze", "gasOutlet", "gasLabel", "solidLayer", "precipParticles", "resultMessage", "reactionType", "reactionEquation", "reactionObservation", "reactionExplanation", "selectedReagents", "containerName", "requiredReagents", "readinessText", "expectedEffect", "compositionList", "heatCheckbox", "heatSwitchRow", "heatToggle", "heatStatus", "checkReaction", "quickStartLab", "instructionPanel", "activeExperimentName", "nextStepHint", "elementGrid", "periodicGrid", "elementCard", "elementFilters", "elementSearch", "reactionFilters", "reactionCatalog", "reactionSearch", "taskList", "taskProgress", "taskScore", "handbookGrid", "handbookSearch", "reagentInfo", "heatDot", "heatModeText", "drawerHeatToggle", "heatLevel", "temperatureValue", "phValue", "timerValue", "volumeValue", "manualNote", "addNote", "clearNotes", "noteList"
+      "backendStatus", "debugStatus", "guidedMode", "freeMode", "authWidget", "authToggle", "authPanel", "authUserPanel", "authForms", "authUserName", "authAvatar", "authUserEmail", "authLogout", "loginForm", "loginEmail", "loginPassword", "registerForm", "registerName", "registerEmail", "registerPassword", "authSwitch", "authMessage", "progressSummary", "progressCompleted", "progressLast", "shelfReagents", "equipmentDock", "wallPeriodicGrid", "benchDropzone", "workspaceItems", "reactionVessel", "bubbles", "gasHaze", "gasOutlet", "gasLabel", "solidLayer", "precipParticles", "resultMessage", "reactionType", "reactionEquation", "reactionObservation", "reactionExplanation", "selectedReagents", "containerName", "requiredReagents", "readinessText", "expectedEffect", "compositionList", "heatCheckbox", "heatSwitchRow", "heatToggle", "heatStatus", "checkReaction", "instructionPanel", "activeExperimentName", "elementGrid", "periodicGrid", "elementCard", "elementFilters", "elementSearch", "reactionFilters", "reactionCatalog", "reactionSearch", "taskList", "taskProgress", "taskScore", "handbookGrid", "handbookSearch", "reagentInfo", "heatDot", "heatModeText", "drawerHeatToggle", "heatLevel", "temperatureValue", "phValue", "timerValue", "volumeValue", "manualNote", "addNote", "clearNotes", "noteList"
     ].forEach(id => { dom[id] = get(id); });
     dom.dropzone = dom.benchDropzone;
   }
@@ -1323,6 +1278,7 @@
   async function init() {
     cacheDom();
     await loadApiData();
+    ingestConstructorProducts();
     engine = window.ChemLabReactions.createReactionEngine(window.ChemLabReactionData.reactions);
     setupNavigation();
     renderElementFilters();
@@ -1349,6 +1305,13 @@
     window.ChemLabStartReaction = startReactionScenario;
     refreshAuthUser();
     resetLab();
+    const pendingReagent = localStorage.getItem("chemlab_pending_reagent");
+    if (pendingReagent) {
+      localStorage.removeItem("chemlab_pending_reagent");
+      setLabMode("free");
+      activateToolSection("reagents");
+      setResultMessage("Созданный продукт " + pendingReagent + " доступен на полке реактивов и может участвовать в следующих подтверждённых реакциях.", "info");
+    }
   }
 
   document.addEventListener("DOMContentLoaded", function () {

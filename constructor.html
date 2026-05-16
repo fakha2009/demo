@@ -1,0 +1,168 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ChemLab TJ - Конструктор веществ</title>
+  <link rel="icon" href="assets/logo/chemlab-tj-logo.png">
+  <link rel="stylesheet" href="css/main.css">
+  <link rel="stylesheet" href="css/lab.css">
+  <link rel="stylesheet" href="css/constructor.css">
+  <script defer src="js/config.js"></script>
+  <script defer src="js/api.js"></script>
+  <script defer src="js/data-reactions.js"></script>
+  <script defer src="js/reactions.js"></script>
+  <script defer src="js/constructor.js"></script>
+</head>
+<body class="app-body constructor-body">
+  <header class="topbar">
+    <a class="brand" href="index.html" aria-label="ChemLab TJ">
+      <span class="brand-mark">CL</span>
+      <span>ChemLab TJ</span>
+    </a>
+    <nav class="main-nav" aria-label="Главная навигация">
+      <a href="demo.html#lab">Лаборатория</a>
+      <a class="is-active" href="constructor.html">Конструктор</a>
+      <a href="periodic-table.html">Таблица Менделеева</a>
+      <a href="admin.html">Админка</a>
+    </nav>
+  </header>
+
+  <main class="constructor-shell">
+    <section class="constructor-panel builder-panel" aria-label="Параметры сборки">
+      <h1>Конструктор веществ</h1>
+      <p>Соберите продукт из простых веществ или ионов. Симуляция использует только подтверждённые правила и не придумывает реакции.</p>
+
+      <div class="mode-tabs" role="tablist" aria-label="Режим конструктора">
+        <button class="is-active" type="button" data-mode="elements">Элементы</button>
+        <button type="button" data-mode="ions">Ионы</button>
+      </div>
+
+      <form id="constructorForm" class="builder-form">
+        <div class="builder-section" data-panel="elements">
+          <h2>Простые вещества</h2>
+          <div class="choice-grid" id="elementChoices"></div>
+        </div>
+
+        <div class="builder-section" data-panel="ions" hidden>
+          <h2>Катион</h2>
+          <div class="choice-grid ion-grid" id="cationChoices"></div>
+          <h2>Анион</h2>
+          <div class="choice-grid ion-grid" id="anionChoices"></div>
+          <label>Среда
+            <select id="medium">
+              <option value="neutral">нейтральная</option>
+              <option value="acidic">кислая</option>
+              <option value="basic">щелочная</option>
+            </select>
+          </label>
+        </div>
+
+        <div class="condition-grid">
+          <label>Концентрация A
+            <select id="concentrationA">
+              <option value="low">низкая</option>
+              <option value="normal" selected>нормальная</option>
+              <option value="high">высокая</option>
+            </select>
+          </label>
+          <label>Количество A
+            <input id="amountA" type="number" min="0.1" max="10" step="0.1" value="1">
+          </label>
+          <label>Концентрация B
+            <select id="concentrationB">
+              <option value="low">низкая</option>
+              <option value="normal" selected>нормальная</option>
+              <option value="high">высокая</option>
+            </select>
+          </label>
+          <label>Количество B
+            <input id="amountB" type="number" min="0.1" max="10" step="0.1" value="1">
+          </label>
+          <label>Температура, °C
+            <input id="temperature" type="number" min="0" max="400" value="25">
+          </label>
+          <label class="toggle-row"><input id="heating" type="checkbox"><span>Нагрев включён</span></label>
+          <label>Катализатор
+            <select id="catalyst">
+              <option value="">нет</option>
+              <option value="MnO2">MnO2</option>
+              <option value="Pt">Pt</option>
+            </select>
+          </label>
+        </div>
+
+        <button class="primary-action" type="submit">Собрать вещество</button>
+      </form>
+    </section>
+
+    <section class="constructor-stage" aria-label="Лабораторная сцена">
+      <div class="constructor-scene">
+        <div class="constructor-stand"><span></span><span></span><span></span></div>
+        <div class="ion-stream ion-stream-a" id="streamA"></div>
+        <div class="ion-stream ion-stream-b" id="streamB"></div>
+        <div class="constructor-flask" id="constructorFlask">
+          <div class="flask-neck"></div>
+          <div class="flask-glass">
+            <div class="flask-liquid" id="constructorLiquid"></div>
+            <div class="constructor-solids" id="constructorSolids"></div>
+            <div class="constructor-crystals" id="constructorCrystals"></div>
+            <div class="constructor-precipitate" id="constructorPrecipitate"></div>
+            <div class="constructor-bubbles" id="constructorBubbles"></div>
+          </div>
+          <div class="constructor-smoke" id="constructorSmoke"></div>
+          <div class="constructor-gas-label" id="constructorGasLabel"></div>
+          <div class="danger-overlay" id="dangerOverlay">Только учебная симуляция</div>
+        </div>
+        <button class="constructor-burner" id="burnerToggle" type="button" aria-label="Нагреватель">
+          <span></span><i></i>
+        </button>
+      </div>
+      <div class="product-strip">
+        <span>Формула продукта</span>
+        <strong id="productPreview">—</strong>
+      </div>
+    </section>
+
+    <aside class="constructor-panel result-panel" aria-label="Результат">
+      <h2>Результат</h2>
+      <div class="status-card" id="constructorStatus">Выберите компоненты и запустите сборку.</div>
+      <div class="result-block">
+        <span>Уравнение</span>
+        <strong id="equationView">—</strong>
+      </div>
+      <div class="result-block">
+        <span>Наблюдение</span>
+        <p id="observationView">—</p>
+      </div>
+      <div class="result-block">
+        <span>Объяснение</span>
+        <p id="explanationView">—</p>
+      </div>
+      <div class="result-block">
+        <span>Безопасность</span>
+        <p id="safetyView">—</p>
+      </div>
+      <div class="product-actions">
+        <button class="primary-action" id="saveProduct" type="button" disabled>Сохранить продукт</button>
+        <button class="secondary-action" id="useInLab" type="button" disabled>Использовать в лаборатории</button>
+      </div>
+    </aside>
+
+    <section class="constructor-history" aria-label="История синтезов">
+      <div>
+        <h2>Созданные вещества</h2>
+        <div class="history-list" id="createdProducts"></div>
+      </div>
+      <div>
+        <h2>Последние синтезы</h2>
+        <div class="history-list" id="synthesisHistory"></div>
+      </div>
+      <div>
+        <h2>Лабораторный журнал</h2>
+        <div class="journal-list" id="labJournal"></div>
+      </div>
+    </section>
+  </main>
+</body>
+</html>

@@ -2,28 +2,38 @@ const { Pool } = require("pg");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 
+const dbConfig = databaseConfig();
 const pool = new Pool({
-  connectionString: databaseUrl(),
-  ssl: { rejectUnauthorized: false },
+  connectionString: dbConfig.connectionString,
+  ssl: dbConfig.ssl,
   max: 3
 });
 
-const jwtSecret = process.env.JWT_SECRET || process.env.SUPABASE_JWT_SECRET || "change-me";
+const jwtSecret = getJwtSecret();
 
-function databaseUrl() {
+function databaseConfig() {
   const raw = process.env.DATABASE_URL || process.env.POSTGRES_URL_NON_POOLING || process.env.POSTGRES_URL;
-  if (!raw) return raw;
+  if (!raw) throw new Error("DATABASE_URL is required.");
+  const isLocal = /(^|@)(localhost|127\.0\.0\.1)(:|\/|$)/i.test(raw) || /sslmode=disable/i.test(raw);
+  const ssl = isLocal ? false : { rejectUnauthorized: false };
   try {
     const url = new URL(raw);
     url.searchParams.delete("sslmode");
-    return url.toString();
+    return { connectionString: url.toString(), ssl };
   } catch {
-    return raw.replace(/([?&])sslmode=[^&]+&?/i, "$1").replace(/[?&]$/, "");
+    return { connectionString: raw.replace(/([?&])sslmode=[^&]+&?/i, "$1").replace(/[?&]$/, ""), ssl };
   }
 }
 
+function getJwtSecret() {
+  const secret = process.env.JWT_SECRET || process.env.SUPABASE_JWT_SECRET;
+  const isProduction = process.env.NODE_ENV === "production" || process.env.VERCEL_ENV === "production";
+  if (!secret && isProduction) throw new Error("JWT_SECRET is required in production.");
+  return secret || "dev-only-change-me";
+}
+
 module.exports = async function handler(req, res) {
-  setCors(req, res);
+  if (!setCors(req, res)) return json(res, 403, { error: "Origin is not allowed." });
   if (req.method === "OPTIONS") return res.status(204).end();
 
   const route = getRoute(req);
@@ -81,11 +91,31 @@ module.exports = async function handler(req, res) {
 };
 
 function setCors(req, res) {
-  const origin = req.headers.origin || "*";
-  res.setHeader("Access-Control-Allow-Origin", origin);
-  res.setHeader("Vary", "Origin");
+  const origin = req.headers.origin;
+  const allowed = allowedOrigins();
+  if (origin) {
+    if (!allowed.has(origin)) return false;
+    res.setHeader("Access-Control-Allow-Origin", origin);
+    res.setHeader("Vary", "Origin");
+  }
   res.setHeader("Access-Control-Allow-Headers", "Content-Type, Authorization");
   res.setHeader("Access-Control-Allow-Methods", "GET,POST,PUT,PATCH,DELETE,OPTIONS");
+  return true;
+}
+
+function allowedOrigins() {
+  const values = new Set(
+    String(process.env.CORS_ORIGINS || "")
+      .split(",")
+      .map((value) => value.trim())
+      .filter(Boolean)
+  );
+  if (process.env.VERCEL_URL) values.add(`https://${process.env.VERCEL_URL}`);
+  if (process.env.NODE_ENV !== "production" && process.env.VERCEL_ENV !== "production") {
+    values.add("http://localhost:5173");
+    values.add("http://127.0.0.1:5173");
+  }
+  return values;
 }
 
 function getRoute(req) {

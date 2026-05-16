@@ -9,20 +9,6 @@ npm run build
 npm run dev
 ```
 
-Быстрая проверка проекта перед пушем:
-
-```bash
-npm run audit
-```
-
-Проверка опубликованного сайта:
-
-```bash
-npm run smoke:prod
-```
-
-По умолчанию smoke проверяет `https://demo-seven-omega-89.vercel.app`. Для другого адреса задайте `CHEMLAB_PROD_URL`. Если нужно падать при недоступном API, добавьте `SMOKE_REQUIRE_API=true`.
-
 Открыть:
 
 - `http://localhost:5173/index.html`
@@ -31,12 +17,6 @@ npm run smoke:prod
 - `http://localhost:5173/admin.html`
 
 API URL задаётся через `CHEMLAB_API_URL`, по умолчанию: `http://localhost:8080/api`.
-
-## Что улучшено в демо
-
-- Главная страница получила светлую/тёмную тему, активную навигацию по разделам и более точный текст для презентации.
-- Полная лаборатория получила краткую инструкцию, кнопку «Быстрый старт», подсказку следующего шага и подсветку нужного действия.
-- Добавлены `npm run audit`, `npm run smoke:prod` и GitHub Actions CI для проверки данных, сборки и Go backend.
 
 ## Запуск backend
 

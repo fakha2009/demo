@@ -72,6 +72,12 @@
     getTasks: () => apiClient.get("/tasks"),
     getHandbook: () => apiClient.get("/handbook"),
     saveAttempt: (payload) => apiClient.post("/experiments", payload),
+    getConstructorElements: () => apiClient.get("/constructor/elements"),
+    getConstructorIons: () => apiClient.get("/constructor/ions"),
+    evaluateConstructor: (payload) => apiClient.post("/constructor/evaluate", payload),
+    validateConstructor: (payload) => apiClient.post("/constructor/validate", payload),
+    getConstructorProducts: () => apiClient.get("/constructor/products"),
+    saveConstructorProduct: (payload) => apiClient.post("/constructor/save-product", payload),
     login: async (email, password) => {
       const result = await apiClient.post("/auth/login", { email, password });
       setToken(result.token);

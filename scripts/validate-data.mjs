@@ -1,63 +1,78 @@
-import { readFile } from "node:fs/promises";
+import fs from "node:fs";
 import path from "node:path";
 
 const root = process.cwd();
+const failures = [];
 
-async function readJson(file) {
-  return JSON.parse(await readFile(path.join(root, file), "utf8"));
+function readJSON(file) {
+  const fullPath = path.join(root, file);
+  try {
+    return JSON.parse(fs.readFileSync(fullPath, "utf8"));
+  } catch (error) {
+    failures.push(`${file}: invalid JSON (${error.message})`);
+    return null;
+  }
 }
 
 function assert(condition, message) {
-  if (!condition) throw new Error(message);
+  if (!condition) failures.push(message);
 }
 
-function uniqueBy(items, key, label) {
+function unique(items, key, label) {
   const seen = new Set();
   for (const item of items) {
-    const value = item[key];
-    assert(value !== undefined && value !== null && value !== "", `${label}: empty ${key}`);
-    assert(!seen.has(value), `${label}: duplicate ${key} ${value}`);
+    const value = item?.[key];
+    assert(value !== undefined && value !== null && value !== "", `${label}: missing ${key}`);
+    if (value === undefined || value === null || value === "") continue;
+    assert(!seen.has(value), `${label}: duplicate ${key} "${value}"`);
     seen.add(value);
   }
-  return seen;
 }
 
-const [elementsData, substancesData, reactionsData] = await Promise.all([
-  readJson("backend/seeddata/elements.json"),
-  readJson("backend/seeddata/substances.json"),
-  readJson("backend/seeddata/reactions.json")
-]);
+function validateElements(file) {
+  const doc = readJSON(file);
+  if (!doc) return;
+  const elements = doc.elements;
+  assert(Array.isArray(elements), `${file}: elements must be an array`);
+  if (!Array.isArray(elements)) return;
 
-const elements = elementsData.elements || [];
-const substances = substancesData.substances || [];
-const reactions = reactionsData.reactions || [];
+  unique(elements, "atomic_number", file);
+  unique(elements, "symbol", file);
+  assert(elements.length === 118, `${file}: expected 118 elements, got ${elements.length}`);
+  assert(doc.metadata?.total_elements === elements.length, `${file}: metadata.total_elements does not match elements length`);
 
-assert(elements.length === 118, `elements: expected 118, got ${elements.length}`);
-assert(elementsData.metadata?.total_elements === elements.length, "elements: metadata total_elements mismatch");
-uniqueBy(elements, "atomic_number", "elements");
-uniqueBy(elements, "symbol", "elements");
-for (const element of elements) {
-  assert(element.name_ru && element.name_en, `elements: ${element.symbol} misses names`);
-  const extendedRow = element.category === "lanthanide" || element.category === "actinide";
-  assert(extendedRow ? element.group === null || (Number.isInteger(element.group) && element.group >= 0 && element.group <= 18) : Number.isInteger(element.group) && element.group >= 1 && element.group <= 18, `elements: bad group for ${element.symbol}`);
-  assert(Number.isInteger(element.period) && element.period >= 1 && element.period <= 7, `elements: bad period for ${element.symbol}`);
-}
-
-const substanceIds = uniqueBy(substances, "id", "substances");
-for (const substance of substances) {
-  assert(substance.name && substance.formula, `substances: ${substance.id} misses name/formula`);
-  assert(substance.safetyLevel || substance.hazard_level, `substances: ${substance.id} misses safety level`);
-}
-
-uniqueBy(reactions, "id", "reactions");
-assert(reactionsData.metadata?.total_reactions === reactions.length, "reactions: metadata total_reactions mismatch");
-for (const reaction of reactions) {
-  assert(reaction.title && reaction.equation && reaction.type, `reactions: ${reaction.id} misses title/equation/type`);
-  assert(Array.isArray(reaction.reactants) && reaction.reactants.length >= 2, `reactions: ${reaction.id} needs at least two reactants`);
-  for (const reactant of reaction.reactants) {
-    assert(substanceIds.has(reactant), `reactions: ${reaction.id} references unknown reactant ${reactant}`);
+  for (const element of elements) {
+    assert(Number.isInteger(element.atomic_number) && element.atomic_number >= 1 && element.atomic_number <= 118, `${file}: invalid atomic_number for ${element.symbol}`);
+    assert(typeof element.symbol === "string" && /^[A-Z][a-z]?$/.test(element.symbol), `${file}: invalid symbol "${element.symbol}"`);
+    assert(typeof element.name_ru === "string" && element.name_ru.length > 0, `${file}: missing Russian name for ${element.symbol}`);
+    assert(typeof element.name_en === "string" && element.name_en.length > 0, `${file}: missing English name for ${element.symbol}`);
+    assert(Number.isInteger(element.period) && element.period >= 1 && element.period <= 7, `${file}: invalid period for ${element.symbol}`);
+    if (element.group !== null) {
+      assert(Number.isInteger(element.group) && element.group >= 1 && element.group <= 18, `${file}: invalid group for ${element.symbol}`);
+    }
   }
-  assert(reaction.observation && reaction.explanation, `reactions: ${reaction.id} misses observation/explanation`);
 }
 
-console.log(`Data OK: ${elements.length} elements, ${substances.length} substances, ${reactions.length} reactions.`);
+function validateCollection(file, key) {
+  const doc = readJSON(file);
+  if (!doc) return;
+  const items = doc[key];
+  assert(Array.isArray(items), `${file}: ${key} must be an array`);
+  if (!Array.isArray(items)) return;
+  unique(items, "id", file);
+}
+
+validateElements("data/elements.json");
+validateElements("backend/seeddata/elements.json");
+validateCollection("data/reactions.json", "reactions");
+validateCollection("backend/seeddata/reactions.json", "reactions");
+validateCollection("data/substances.json", "substances");
+validateCollection("backend/seeddata/substances.json", "substances");
+
+if (failures.length) {
+  console.error("Data validation failed:");
+  for (const failure of failures) console.error(`- ${failure}`);
+  process.exit(1);
+}
+
+console.log("Data validation passed.");

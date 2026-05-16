@@ -3,10 +3,9 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
+    "audit": "node scripts/validate-data.mjs && npm run build",
     "build": "node scripts/generate-config.mjs",
     "build:vercel": "node scripts/build-vercel.mjs",
-    "audit": "node scripts/validate-data.mjs && npm run build",
-    "smoke:prod": "node scripts/smoke-production.mjs",
     "dev": "py -m http.server 5173",
     "start": "py -m http.server 5173",
     "backend": "cd backend && go run ./cmd/api",

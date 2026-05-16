@@ -6,5 +6,8 @@ backend/api.exe
 backend/chemlab-api
 node_modules/
 dist/
+output/
+test-results/
+.playwright-cli/
 
 .vercel

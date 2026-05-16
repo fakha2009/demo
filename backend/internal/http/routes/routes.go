@@ -19,6 +19,7 @@ func NewRouter(cfg config.Config, store *repositories.Store) http.Handler {
 	authHandler := handlers.NewAuthHandler(authService, store)
 	progressHandler := handlers.NewProgressHandler(store)
 	adminHandler := handlers.NewAdminHandler(store)
+	constructorHandler := handlers.NewConstructorHandler(store)
 	authMiddleware := middleware.Auth(cfg.JWTSecret)
 
 	mux.Handle("/api/health", healthHandler)
@@ -38,6 +39,14 @@ func NewRouter(cfg config.Config, store *repositories.Store) http.Handler {
 	mux.Handle("/api/experiments", authMiddleware(http.HandlerFunc(progressHandler.CreateAttempt)))
 	mux.Handle("/api/experiments/attempts", authMiddleware(http.HandlerFunc(progressHandler.CreateAttempt)))
 	mux.Handle("/api/progress/me", authMiddleware(http.HandlerFunc(progressHandler.MyProgress)))
+	mux.HandleFunc("/api/constructor/elements", constructorHandler.Elements)
+	mux.HandleFunc("/api/constructor/ions", constructorHandler.Ions)
+	mux.HandleFunc("/api/constructor/evaluate", constructorHandler.Evaluate)
+	mux.HandleFunc("/api/constructor/validate", constructorHandler.Validate)
+	mux.Handle("/api/constructor/save-product", authMiddleware(http.HandlerFunc(constructorHandler.SaveProduct)))
+	mux.Handle("/api/constructor/products/me", authMiddleware(http.HandlerFunc(constructorHandler.MyProducts)))
+	mux.Handle("/api/constructor/products", authMiddleware(http.HandlerFunc(constructorHandler.MyProducts)))
+	mux.Handle("/api/constructor/products/save", authMiddleware(http.HandlerFunc(constructorHandler.SaveProduct)))
 	mux.Handle("/api/admin/", authMiddleware(adminHandler))
 
 	return middleware.Recovery(middleware.Logging(middleware.CORS(cfg.CORSOrigins)(mux)))

@@ -84,6 +84,36 @@ func (h *AdminHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		h.deleteEntity(w, r, "handbook_entries", parts[1], user.ID)
 	case len(parts) == 3 && parts[0] == "handbook" && parts[2] == "toggle" && r.Method == http.MethodPatch:
 		h.toggle(w, r, "handbook_entries", parts[1], user.ID)
+	case path == "constructor/ions" && r.Method == http.MethodGet:
+		h.constructorIons(w, r)
+	case path == "constructor/ions" && r.Method == http.MethodPost:
+		h.saveConstructorIon(w, r, "", user.ID)
+	case len(parts) == 3 && parts[0] == "constructor" && parts[1] == "ions" && r.Method == http.MethodPut:
+		h.saveConstructorIon(w, r, parts[2], user.ID)
+	case len(parts) == 3 && parts[0] == "constructor" && parts[1] == "ions" && r.Method == http.MethodDelete:
+		h.deleteConstructorTable(w, r, "constructor_ions", parts[2], user.ID)
+	case path == "constructor/element-rules" && r.Method == http.MethodGet:
+		h.constructorElementRules(w, r)
+	case path == "constructor/element-rules" && r.Method == http.MethodPost:
+		h.saveConstructorElementRule(w, r, "", user.ID)
+	case len(parts) == 3 && parts[0] == "constructor" && parts[1] == "element-rules" && r.Method == http.MethodPut:
+		h.saveConstructorElementRule(w, r, parts[2], user.ID)
+	case len(parts) == 4 && parts[0] == "constructor" && parts[1] == "element-rules" && parts[3] == "toggle" && r.Method == http.MethodPatch:
+		h.toggleConstructorElementRule(w, r, parts[2], user.ID)
+	case len(parts) == 3 && parts[0] == "constructor" && parts[1] == "element-rules" && r.Method == http.MethodDelete:
+		h.deleteConstructorTable(w, r, "constructor_element_rules", parts[2], user.ID)
+	case path == "constructor/solubility" && r.Method == http.MethodGet:
+		h.solubilityRules(w, r)
+	case path == "constructor/solubility" && r.Method == http.MethodPost:
+		h.saveSolubilityRule(w, r, "", user.ID)
+	case len(parts) == 3 && parts[0] == "constructor" && parts[1] == "solubility" && r.Method == http.MethodPut:
+		h.saveSolubilityRule(w, r, parts[2], user.ID)
+	case len(parts) == 3 && parts[0] == "constructor" && parts[1] == "solubility" && r.Method == http.MethodDelete:
+		h.deleteConstructorTable(w, r, "solubility_rules", parts[2], user.ID)
+	case path == "constructor/products" && r.Method == http.MethodGet:
+		h.constructorProducts(w, r)
+	case len(parts) == 3 && parts[0] == "constructor" && parts[1] == "products" && r.Method == http.MethodDelete:
+		h.deleteConstructorProduct(w, r, parts[2], user.ID)
 	default:
 		writeError(w, http.StatusNotFound, "admin endpoint not found")
 	}
@@ -127,6 +157,14 @@ func (h *AdminHandler) dashboard(w http.ResponseWriter, r *http.Request) {
 		"totalReactions":   count(db, "reactions"),
 		"totalSubstances":  count(db, "substances"),
 		"totalExperiments": count(db, "experiment_attempts"),
+		"createdProducts":  count(db, "user_substances"),
+		"popularReactions": queryList(r, db, `
+			SELECT reaction_id, COUNT(*) AS attempts
+			FROM experiment_attempts
+			GROUP BY reaction_id
+			ORDER BY attempts DESC
+			LIMIT 6
+		`),
 		"recentExperiments": queryList(r, db, `
 			SELECT id::text, user_id::text, reaction_id, COALESCE(observation, result_status, '') AS result, created_at
 			FROM experiment_attempts ORDER BY created_at DESC LIMIT 8
@@ -479,6 +517,172 @@ func (h *AdminHandler) experiments(w http.ResponseWriter, r *http.Request) {
 	writeJSON(w, http.StatusOK, map[string]any{"experiments": rows})
 }
 
+func (h *AdminHandler) constructorIons(w http.ResponseWriter, r *http.Request) {
+	rows := queryList(r, h.store.DB(), `
+		SELECT id, symbol, name_ru, charge, type, formula_part, color, common, description_ru, created_at, updated_at
+		FROM constructor_ions ORDER BY type DESC, charge, symbol
+	`)
+	writeJSON(w, http.StatusOK, map[string]any{"ions": rows})
+}
+
+func (h *AdminHandler) saveConstructorIon(w http.ResponseWriter, r *http.Request, id, adminID string) {
+	var req map[string]any
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		writeError(w, http.StatusBadRequest, "invalid json")
+		return
+	}
+	if id == "" {
+		id = strings.TrimSpace(stringValue(req["id"]))
+	}
+	if id == "" || stringValue(req["symbol"]) == "" || stringValue(req["type"]) == "" || intValue(req["charge"], 0) == 0 {
+		writeError(w, http.StatusBadRequest, "id, symbol, type and charge are required")
+		return
+	}
+	_, err := h.store.DB().ExecContext(r.Context(), `
+		INSERT INTO constructor_ions (id, symbol, name_ru, charge, type, formula_part, color, common, description_ru, updated_at)
+		VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,now())
+		ON CONFLICT (id) DO UPDATE SET
+		  symbol=EXCLUDED.symbol,name_ru=EXCLUDED.name_ru,charge=EXCLUDED.charge,type=EXCLUDED.type,
+		  formula_part=EXCLUDED.formula_part,color=EXCLUDED.color,common=EXCLUDED.common,
+		  description_ru=EXCLUDED.description_ru,updated_at=now()
+	`, id, stringValue(req["symbol"]), defaultString(req["name_ru"], stringValue(req["symbol"])), intValue(req["charge"], 0),
+		stringValue(req["type"]), defaultString(req["formula_part"], stringValue(req["symbol"])), stringValue(req["color"]),
+		boolValueDefault(req["common"], true), stringValue(req["description_ru"]))
+	if err != nil {
+		writeError(w, http.StatusInternalServerError, "failed to save ion")
+		return
+	}
+	h.log(r, adminID, "admin_save_constructor_ion", "constructor_ion", id, req)
+	h.constructorIons(w, r)
+}
+
+func (h *AdminHandler) constructorElementRules(w http.ResponseWriter, r *http.Request) {
+	rows := queryList(r, h.store.DB(), `
+		SELECT id, reactant_a, reactant_b, equation, product_formula, product_name_ru, product_type,
+		       product_state, visual_json, conditions_json, explanation_ru, safety_ru, simulation_only,
+		       enabled, created_at, updated_at
+		FROM constructor_element_rules ORDER BY updated_at DESC
+	`)
+	writeJSON(w, http.StatusOK, map[string]any{"rules": rows})
+}
+
+func (h *AdminHandler) saveConstructorElementRule(w http.ResponseWriter, r *http.Request, id, adminID string) {
+	var req map[string]any
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		writeError(w, http.StatusBadRequest, "invalid json")
+		return
+	}
+	if id == "" {
+		id = defaultString(req["id"], slugID(stringValue(req["product_formula"])+"-"+stringValue(req["reactant_a"])+"-"+stringValue(req["reactant_b"])))
+	}
+	visual, _ := json.Marshal(jsonMapValue(req["visual_json"]))
+	conditions, _ := json.Marshal(jsonMapValue(req["conditions_json"]))
+	_, err := h.store.DB().ExecContext(r.Context(), `
+		INSERT INTO constructor_element_rules (
+		  id, reactant_a, reactant_b, equation, product_formula, product_name_ru, product_type, product_state,
+		  visual_json, conditions_json, explanation_ru, safety_ru, simulation_only, enabled, updated_at
+		) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,true,$13,now())
+		ON CONFLICT (id) DO UPDATE SET
+		  reactant_a=EXCLUDED.reactant_a,reactant_b=EXCLUDED.reactant_b,equation=EXCLUDED.equation,
+		  product_formula=EXCLUDED.product_formula,product_name_ru=EXCLUDED.product_name_ru,
+		  product_type=EXCLUDED.product_type,product_state=EXCLUDED.product_state,visual_json=EXCLUDED.visual_json,
+		  conditions_json=EXCLUDED.conditions_json,explanation_ru=EXCLUDED.explanation_ru,safety_ru=EXCLUDED.safety_ru,
+		  enabled=EXCLUDED.enabled,updated_at=now()
+	`, id, stringValue(req["reactant_a"]), stringValue(req["reactant_b"]), stringValue(req["equation"]),
+		stringValue(req["product_formula"]), defaultString(req["product_name_ru"], stringValue(req["product_formula"])),
+		defaultString(req["product_type"], "salt"), defaultString(req["product_state"], "solid"), visual, conditions,
+		stringValue(req["explanation_ru"]), stringValue(req["safety_ru"]), boolValueDefault(req["enabled"], true))
+	if err != nil {
+		writeError(w, http.StatusInternalServerError, "failed to save rule")
+		return
+	}
+	h.log(r, adminID, "admin_save_constructor_rule", "constructor_element_rule", id, req)
+	h.constructorElementRules(w, r)
+}
+
+func (h *AdminHandler) solubilityRules(w http.ResponseWriter, r *http.Request) {
+	rows := queryList(r, h.store.DB(), `
+		SELECT compound_formula, soluble, kind, precipitate_color, note_ru, created_at, updated_at
+		FROM solubility_rules ORDER BY compound_formula
+	`)
+	writeJSON(w, http.StatusOK, map[string]any{"rules": rows})
+}
+
+func (h *AdminHandler) saveSolubilityRule(w http.ResponseWriter, r *http.Request, id, adminID string) {
+	var req map[string]any
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		writeError(w, http.StatusBadRequest, "invalid json")
+		return
+	}
+	if id == "" {
+		id = strings.TrimSpace(stringValue(req["compound_formula"]))
+	}
+	if id == "" {
+		writeError(w, http.StatusBadRequest, "compound_formula is required")
+		return
+	}
+	_, err := h.store.DB().ExecContext(r.Context(), `
+		INSERT INTO solubility_rules (compound_formula, soluble, kind, precipitate_color, note_ru, updated_at)
+		VALUES ($1,$2,$3,$4,$5,now())
+		ON CONFLICT (compound_formula) DO UPDATE SET
+		  soluble=EXCLUDED.soluble,kind=EXCLUDED.kind,precipitate_color=EXCLUDED.precipitate_color,
+		  note_ru=EXCLUDED.note_ru,updated_at=now()
+	`, id, boolValue(req["soluble"]), defaultString(req["kind"], "unknown"), stringValue(req["precipitate_color"]), stringValue(req["note_ru"]))
+	if err != nil {
+		writeError(w, http.StatusInternalServerError, "failed to save solubility rule")
+		return
+	}
+	h.log(r, adminID, "admin_save_solubility_rule", "solubility_rule", id, req)
+	h.solubilityRules(w, r)
+}
+
+func (h *AdminHandler) constructorProducts(w http.ResponseWriter, r *http.Request) {
+	rows := queryList(r, h.store.DB(), `
+		SELECT id::text, user_id::text, COALESCE(substance_id, '') AS substance_id, formula, name_ru, type,
+		       state, visual_state, color, source_mode, source_equation, cation, anion, created_at
+		FROM constructor_products ORDER BY created_at DESC LIMIT 300
+	`)
+	writeJSON(w, http.StatusOK, map[string]any{"products": rows})
+}
+
+func (h *AdminHandler) toggleConstructorElementRule(w http.ResponseWriter, r *http.Request, id, adminID string) {
+	_, err := h.store.DB().ExecContext(r.Context(), `UPDATE constructor_element_rules SET enabled = NOT enabled, updated_at = now() WHERE id = $1`, id)
+	if err != nil {
+		writeError(w, http.StatusInternalServerError, "failed to toggle rule")
+		return
+	}
+	h.log(r, adminID, "admin_toggle_constructor_rule", "constructor_element_rule", id, nil)
+	writeJSON(w, http.StatusOK, map[string]bool{"ok": true})
+}
+
+func (h *AdminHandler) deleteConstructorTable(w http.ResponseWriter, r *http.Request, table, id, adminID string) {
+	if table != "constructor_ions" && table != "constructor_element_rules" && table != "solubility_rules" {
+		writeError(w, http.StatusBadRequest, "invalid constructor table")
+		return
+	}
+	key := "id"
+	if table == "solubility_rules" {
+		key = "compound_formula"
+	}
+	_, err := h.store.DB().ExecContext(r.Context(), "DELETE FROM "+table+" WHERE "+key+" = $1", id)
+	if err != nil {
+		writeError(w, http.StatusInternalServerError, "failed to delete")
+		return
+	}
+	h.log(r, adminID, "admin_delete_"+table, table, id, nil)
+	writeJSON(w, http.StatusOK, map[string]bool{"ok": true})
+}
+
+func (h *AdminHandler) deleteConstructorProduct(w http.ResponseWriter, r *http.Request, id, adminID string) {
+	_, err := h.store.DB().ExecContext(r.Context(), `DELETE FROM constructor_products WHERE id = $1`, id)
+	if err != nil {
+		writeError(w, http.StatusInternalServerError, "failed to delete product")
+		return
+	}
+	h.log(r, adminID, "admin_delete_constructor_product", "constructor_product", id, nil)
+	writeJSON(w, http.StatusOK, map[string]bool{"ok": true})
+}
+
 func (h *AdminHandler) log(r *http.Request, userID, action, entityType, entityID string, details any) {
 	raw, _ := json.Marshal(details)
 	_, _ = h.store.DB().ExecContext(r.Context(), `
@@ -546,6 +750,27 @@ func defaultString(v any, fallback string) string {
 func boolValue(v any) bool {
 	b, _ := v.(bool)
 	return b
+}
+
+func boolValueDefault(v any, fallback bool) bool {
+	b, ok := v.(bool)
+	if !ok {
+		return fallback
+	}
+	return b
+}
+
+func jsonMapValue(v any) map[string]any {
+	switch value := v.(type) {
+	case map[string]any:
+		return value
+	case string:
+		var parsed map[string]any
+		if json.Unmarshal([]byte(value), &parsed) == nil {
+			return parsed
+		}
+	}
+	return map[string]any{}
 }
 
 func intValue(v any, fallback int) int {
